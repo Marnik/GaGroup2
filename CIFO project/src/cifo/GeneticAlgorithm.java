@@ -1,5 +1,6 @@
 package cifo;
 
+import java.text.DecimalFormat;
 import java.util.Random;
 
 public class GeneticAlgorithm extends SearchMethod {
@@ -26,9 +27,14 @@ public class GeneticAlgorithm extends SearchMethod {
 	}
 
 	public void run() {
+		double startTime = System.currentTimeMillis();
 		initialize();
 		evolve();
 		Main.addBestSolution(currentBest);
+		double endTime   = System.currentTimeMillis();
+		double totalTime = (endTime - startTime) / 600;
+		DecimalFormat f = new DecimalFormat("##.00");
+		System.out.println("Run time: " + f.format(totalTime) + " seconds");
 	}
 
 	public void initialize() {
