@@ -1,6 +1,7 @@
 package cifo;
 
 import java.text.DecimalFormat;
+import java.util.HashMap;
 import java.util.Random;
 
 public class GeneticAlgorithm extends SearchMethod {
@@ -30,7 +31,7 @@ public class GeneticAlgorithm extends SearchMethod {
 		double startTime = System.currentTimeMillis();
 		initialize();
 		evolve();
-		double endTime   = System.currentTimeMillis();
+		double endTime = System.currentTimeMillis();
 		double executionTime = (endTime - startTime) / 60000;
 		Main.addBestSolution(currentBest, executionTime);
 	}
@@ -55,6 +56,8 @@ public class GeneticAlgorithm extends SearchMethod {
 			Solution[] offspring = new Solution[populationSize];
 			for (int k = 0; k < population.length; k++) {
 				int[] parents = selectParents();
+				//int[] parents = rouletteSelection();
+
 				offspring[k] = applyCrossover(parents);
 				if (r.nextDouble() <= mutationProbability) {
 					offspring[k] = offspring[k].applyMutation();
@@ -69,6 +72,7 @@ public class GeneticAlgorithm extends SearchMethod {
 		}
 	}
 
+	// Method to select parents using the tournament selection method
 	public int[] selectParents() {
 		int[] parents = new int[2];
 		parents[0] = r.nextInt(populationSize);
@@ -89,6 +93,61 @@ public class GeneticAlgorithm extends SearchMethod {
 		return parents;
 	}
 
+	// Method to select parents using the roulette wheel selection method
+	private int[] rouletteSelection() {
+		int[] parents = new int[2];
+		HashMap<Integer, Double> rouletteWheel = createRouletteWheel();
+
+		// 'Spin the roulette wheel twice' so select two parents
+		for (int i = 0; i < 2; i++) {
+			Random r = new Random();
+			double randomDouble = 1.0 * r.nextDouble();
+			
+			// Loop through the HashMap containing the probabilities and select
+			// the individual containing the range in which the random number is located.
+			for (int j = 0; j < populationSize; j++) { 
+				if (randomDouble < rouletteWheel.get(j)) {
+					parents[i] = j;
+					break;
+				}
+			}
+		}
+		return parents;
+	}
+	
+	// Method that is used to set up the roulette wheel which is used to select parents
+	private HashMap<Integer, Double> createRouletteWheel(){
+		double totalFitness = 0.0;
+		HashMap<Integer, Double> invertedProbabilities = new HashMap<Integer, Double>();
+		HashMap<Integer, Double> rouletteWheel = new HashMap<Integer, Double>();
+		
+		for (int i = 0; i < populationSize; i++) {
+			totalFitness += population[i].getFitness();
+		}
+
+		// Minimization problem, so invert values that are normally used for a maximization problem.
+		for (int i = 0; i < populationSize; i++) {
+			invertedProbabilities.put(i, 1 - (population[i].getFitness() / totalFitness));
+		}
+
+		// We want to repeat the process for found values without
+		// subtracting from 1. This time we'll assign the cumulative probabilities.
+		totalFitness = 0.0;
+		for (double d : invertedProbabilities.values()) {
+			totalFitness += d;
+		}
+
+		for (int i = 0; i < populationSize; i++) {
+			if (i == 0) {
+				rouletteWheel.put(i, invertedProbabilities.get(i) / totalFitness);
+			} else {
+				rouletteWheel.put(i, (invertedProbabilities.get(i) / totalFitness) + rouletteWheel.get(i - 1));
+			}
+		}		
+		
+		return rouletteWheel;
+	}
+
 	public Solution applyCrossover(int[] parents) {
 		Solution firstParent = population[parents[0]];
 		Solution secondParent = population[parents[1]];
@@ -97,6 +156,13 @@ public class GeneticAlgorithm extends SearchMethod {
 		for (int i = crossoverPoint; i < instance.getNumberOfTriangles() * Solution.VALUES_PER_TRIANGLE; i++) {
 			offspring.setValue(i, secondParent.getValue(i));
 		}
+		// Loop through triangles
+		for (int i = 0; i < instance.getNumberOfTriangles()
+				* Solution.VALUES_PER_TRIANGLE; i += Solution.VALUES_PER_TRIANGLE - 1) {
+			System.out.println(offspring.getValue(i));
+
+		}
+
 		return offspring;
 	}
 
@@ -148,5 +214,28 @@ public class GeneticAlgorithm extends SearchMethod {
 		if (printFlag) {
 			System.out.printf("Generation: %d\tFitness: %.1f\n", currentGeneration, currentBest.getFitness());
 		}
+	}
+	
+	private double getTotalFitness(){
+		double totalFitness = 0.0;
+		HashMap<Integer, Double> invertedProbabilities = new HashMap<Integer, Double>();
+		
+		for (int i = 0; i < populationSize; i++) {
+			totalFitness += population[i].getFitness();
+		}
+
+		// Minimization problem, so invert values that are normally used for a maximization problem.
+		for (int i = 0; i < populationSize; i++) {
+			invertedProbabilities.put(i, 1 - (population[i].getFitness() / totalFitness));
+		}
+
+		// We want to repeat the process for found values without
+		// subtracting from 1. This time we'll assign the cumulative probabilities.
+		totalFitness = 0.0;
+		for (double d : invertedProbabilities.values()) {
+			totalFitness += d;
+		}
+		
+		return totalFitness;
 	}
 }
