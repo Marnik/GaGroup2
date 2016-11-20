@@ -54,6 +54,7 @@ public class GeneticAlgorithm extends SearchMethod {
 	public void evolve() {
 		while (currentGeneration <= numberOfGenerations) {
 			Solution[] offspring = new Solution[populationSize];
+			System.out.println(offspring[offspring.length-1]);
 			for (int k = 0; k < population.length; k++) {
 				//int[] parents = selectParents();
 				int[] parents = rouletteSelection();
@@ -156,6 +157,13 @@ public class GeneticAlgorithm extends SearchMethod {
 		for (int i = crossoverPoint; i < instance.getNumberOfTriangles() * Solution.VALUES_PER_TRIANGLE; i++) {
 			offspring.setValue(i, secondParent.getValue(i));
 		}
+		// Loop through triangles
+		for (int i = 0; i < instance.getNumberOfTriangles()
+				* Solution.VALUES_PER_TRIANGLE; i += Solution.VALUES_PER_TRIANGLE - 1) {
+			System.out.println(offspring.getValue(i));
+
+		}
+
 		return offspring;
 	}
 	

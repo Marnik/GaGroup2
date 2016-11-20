@@ -54,6 +54,7 @@ public class GeneticAlgorithm extends SearchMethod {
 	public void evolve() {
 		while (currentGeneration <= numberOfGenerations) {
 			Solution[] offspring = new Solution[populationSize];
+			System.out.println(offspring[offspring.length-1]);
 			for (int k = 0; k < population.length; k++) {
 				//int[] parents = selectParents();
 				int[] parents = rouletteSelection();
