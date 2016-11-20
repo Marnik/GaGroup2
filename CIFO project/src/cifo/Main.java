@@ -6,13 +6,14 @@ import gd.gui.GeneticDrawingApp;
 
 public class Main {
 
-	public static final int NUMBER_OF_TRIANGLES = 100;
+	public static final int NUMBER_OF_TRIANGLES = 100;		//fixed
 
-	public static final int NUMBER_OF_RUNS = 10;
-	public static final int NUMBER_OF_GENERATIONS = 2000;
-	public static final int POPULATION_SIZE = 25;
-	public static final double MUTATION_PROBABILIY = 0.25;
-	public static final int TOURNAMENT_SIZE = 3;
+	public static final int NUMBER_OF_RUNS = 30;			//30-50 runs for report; 10 runs for testing
+	public static final int NUMBER_OF_GENERATIONS = 2000;		//fixed to 2000
+	public static final int POPULATION_SIZE = 25;			//fixed to 25
+	public static final double MUTATION_PROBABILIY = 0.25;	//actual probability = 0.25*1/100 = 0.0025
+	public static int TOURNAMENT_SIZE = 3;
+	public static boolean ITERATE_OVER_TOURNAMENT =	false;	//default: false; if set to true, the algorithm will iterate over all tournament sizes from 3 to Population size
 
 	public static boolean KEEP_WINDOWS_OPEN = false;
 
@@ -20,7 +21,8 @@ public class Main {
 	public static double[] bestFitness = new double[NUMBER_OF_RUNS];
 	public static double[] executionTimes = new double[NUMBER_OF_RUNS];
 	public static int currentRun = 0;
-
+	public static int currentTournamentRun = TOURNAMENT_SIZE + 1;
+	
 	public static void main(String[] args) {
 		run();
 	}
@@ -46,6 +48,12 @@ public class Main {
 			run();
 		} else {
 			presentResults();
+			currentTournamentRun++;
+			if (currentTournamentRun <= POPULATION_SIZE && ITERATE_OVER_TOURNAMENT) {
+				currentRun = 0;
+				TOURNAMENT_SIZE = currentTournamentRun;
+				run();
+			}
 		}
 	}
 
@@ -54,6 +62,7 @@ public class Main {
 		double stdDev = Statistics.standardDeviation(bestFitness);
 		double best = Statistics.min(bestFitness);
 		double worst = Statistics.max(bestFitness);
+		System.out.println("\nTournament Size: " + TOURNAMENT_SIZE);
 		double averageExecutionTime = Statistics.mean(executionTimes);
 		System.out.printf("\n\t\tMean +- std dev\t\tBest\t\tWorst\t\tAvg Time\n\n");
 		System.out.printf("Results\t\t%.2f +- %.2f\t%.2f\t%.2f\t%.2f\n", mean, stdDev, best, worst, averageExecutionTime);
