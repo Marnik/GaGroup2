@@ -10,6 +10,7 @@ public class GeneticAlgorithm extends SearchMethod {
 	protected int populationSize, numberOfGenerations;
 	protected double mutationProbability;
 	protected int tournamentSize;
+	protected int numberOfOffsprings;
 	protected boolean printFlag;
 	protected Solution currentBest;
 	protected int currentGeneration;
@@ -22,6 +23,7 @@ public class GeneticAlgorithm extends SearchMethod {
 		numberOfGenerations = Main.NUMBER_OF_GENERATIONS;
 		mutationProbability = Main.MUTATION_PROBABILIY;
 		tournamentSize = Main.TOURNAMENT_SIZE;
+		numberOfOffsprings = Main.NUMBER_OF_OFFSPRINGS;
 		printFlag = false;
 		currentGeneration = 0;
 		r = new Random();
@@ -53,19 +55,41 @@ public class GeneticAlgorithm extends SearchMethod {
 
 	public void evolve() {
 		while (currentGeneration <= numberOfGenerations) {
-			Solution[] offspring = new Solution[populationSize];
-			for (int k = 0; k < population.length; k++) {
-				//int[] parents = selectParents();
-				int[] parents = rouletteSelection();
+			Solution[] offspring = new Solution[numberOfOffsprings];
+			Solution[] nextPopulation = new Solution[populationSize];
+			int nextPopulationSize = 0;
+			
+			for (int k = 0; nextPopulationSize < population.length; k += numberOfOffsprings) {
+				int[] parents = selectParents();
+				//int[] parents = rouletteSelection();
 
-				offspring[k] = applyCrossover(parents);
-				if (r.nextDouble() <= mutationProbability) {
-					offspring[k] = offspring[k].applyMutation();
+				offspring = applyCrossover(parents);
+				
+				// Loop through either one or two offsprings
+				for (int j = 0; j < numberOfOffsprings; j++){
+					if (r.nextDouble() <= mutationProbability) {
+						offspring[j] = offspring[j].applyMutation();
+					}
+					offspring[j].evaluate();
+					
+					// Generating two offsprings resulted in one extra offspring if this converts to true.
+					// Eliminate the offspring with the lowest fitness
+					if(nextPopulationSize == population.length){
+						int worstFitnessIndex = getWorstIndex(nextPopulation);
+						if (offspring[j].getFitness() < nextPopulation[worstFitnessIndex].getFitness()) {
+							nextPopulation[worstFitnessIndex] = offspring[j];
+							
+						}
+					}
+					else{
+						nextPopulation[k+j] = offspring[j];
+						nextPopulationSize++;
+					}
+					
 				}
-				offspring[k].evaluate();
 			}
 
-			population = survivorSelection(offspring);
+			population = survivorSelection(nextPopulation);
 			updateCurrentBest();
 			updateInfo();
 			currentGeneration++;
@@ -148,14 +172,24 @@ public class GeneticAlgorithm extends SearchMethod {
 		return rouletteWheel;
 	}
 
-	public Solution applyCrossover(int[] parents) {
+	public Solution[] applyCrossover(int[] parents) {
 		Solution firstParent = population[parents[0]];
 		Solution secondParent = population[parents[1]];
-		Solution offspring = firstParent.copy();
+		Solution offspring[] = new Solution[numberOfOffsprings];
 		int crossoverPoint = r.nextInt(instance.getNumberOfTriangles() * Solution.VALUES_PER_TRIANGLE);
+		offspring[0] = firstParent.copy();
+		
 		for (int i = crossoverPoint; i < instance.getNumberOfTriangles() * Solution.VALUES_PER_TRIANGLE; i++) {
-			offspring.setValue(i, secondParent.getValue(i));
+			offspring[0].setValue(i, secondParent.getValue(i));
 		}
+		
+		if (numberOfOffsprings == 2){
+			offspring[1] = secondParent.copy();
+			for (int i = crossoverPoint; i < instance.getNumberOfTriangles() * Solution.VALUES_PER_TRIANGLE; i++) {
+				offspring[1].setValue(i, firstParent.getValue(i));
+			}
+		}
+		
 		return offspring;
 	}
 	

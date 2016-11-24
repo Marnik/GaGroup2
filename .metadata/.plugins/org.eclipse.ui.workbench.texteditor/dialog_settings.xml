@@ -2,20 +2,20 @@
 <section name="Workbench">
 	<section name="org.eclipse.ui.texteditor.FindReplaceDialog">
 		<item value="false" key="isRegEx"/>
-		<item value="RouletteWheel" key="selection"/>
+		<item value="getBest" key="selection"/>
 		<item value="false" key="casesensitive"/>
 		<item value="false" key="incremental"/>
 		<item value="true" key="wrap"/>
 		<item value="false" key="wholeword"/>
 		<list key="findhistory">
+			<item value="getbest"/>
+			<item value="system.out"/>
 			<item value="rouletteWheel"/>
 			<item value="population[pa"/>
 			<item value="population[parents]"/>
 			<item value="fitness"/>
 			<item value="temp = "/>
 			<item value="temp"/>
-			<item value="applymutation"/>
-			<item value="mutation"/>
 		</list>
 		<list key="replacehistory">
 			<item value="invertedProbabilities"/>

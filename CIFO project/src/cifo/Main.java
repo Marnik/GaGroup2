@@ -8,12 +8,13 @@ public class Main {
 
 	public static final int NUMBER_OF_TRIANGLES = 100;		//fixed
 
-	public static final int NUMBER_OF_RUNS = 30;			//30-50 runs for report; 10 runs for testing
-	public static final int NUMBER_OF_GENERATIONS = 2000;		//fixed to 2000
+	public static final int NUMBER_OF_RUNS = 10;			//30-50 runs for report; 10 runs for testing
+	public static final int NUMBER_OF_GENERATIONS = 2000;	//fixed to 2000
 	public static final int POPULATION_SIZE = 25;			//fixed to 25
-	public static final double MUTATION_PROBABILIY = 0.25;	//actual probability = 0.25*1/100 = 0.0025
+	public static final double MUTATION_PROBABILIY = 1;	//actual probability = 0.25*1/100 = 0.0025
 	public static int TOURNAMENT_SIZE = 3;
 	public static boolean ITERATE_OVER_TOURNAMENT =	false;	//default: false; if set to true, the algorithm will iterate over all tournament sizes from 3 to Population size
+	public static final int NUMBER_OF_OFFSPRINGS = 2;
 
 	public static boolean KEEP_WINDOWS_OPEN = false;
 
