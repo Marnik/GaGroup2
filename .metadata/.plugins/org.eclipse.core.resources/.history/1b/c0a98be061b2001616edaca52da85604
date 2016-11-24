@@ -60,7 +60,7 @@ public class GeneticAlgorithm extends SearchMethod {
 			Solution[] offspring = new Solution[numberOfOffsprings];
 			Solution[] nextPopulation = new Solution[populationSize];
 			int nextPopulationSize = 0;
-
+			int counter = 0;
 			// Used to choose random triangles to mutate
 			int[] triangleIndexes = new int[instance.getNumberOfTriangles()];
 			for (int t = 0; t < instance.getNumberOfTriangles(); t++) {

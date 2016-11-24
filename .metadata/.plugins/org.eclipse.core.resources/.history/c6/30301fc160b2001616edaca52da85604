@@ -11,7 +11,6 @@ public class GeneticAlgorithm extends SearchMethod {
 	protected double mutationProbability;
 	protected int tournamentSize;
 	protected int numberOfOffsprings;
-	protected int numberOfTriangleMutations;
 	protected boolean printFlag;
 	protected Solution currentBest;
 	protected int currentGeneration;
@@ -23,7 +22,6 @@ public class GeneticAlgorithm extends SearchMethod {
 		populationSize = Main.POPULATION_SIZE;
 		numberOfGenerations = Main.NUMBER_OF_GENERATIONS;
 		mutationProbability = Main.MUTATION_PROBABILIY;
-		numberOfTriangleMutations = Main.NUMBER_OF_TRIANGLE_MUTATIONS;
 		tournamentSize = Main.TOURNAMENT_SIZE;
 		numberOfOffsprings = Main.NUMBER_OF_OFFSPRINGS;
 		printFlag = false;
@@ -60,26 +58,23 @@ public class GeneticAlgorithm extends SearchMethod {
 			Solution[] offspring = new Solution[numberOfOffsprings];
 			Solution[] nextPopulation = new Solution[populationSize];
 			int nextPopulationSize = 0;
-
+			
 			// Used to choose random triangles to mutate
 			int[] triangleIndexes = new int[instance.getNumberOfTriangles()];
-			for (int t = 0; t < instance.getNumberOfTriangles(); t++) {
+			for(int t = 0; t < instance.getNumberOfTriangles(); t++){
 				triangleIndexes[t] = t;
 			}
 
 			for (int k = 0; nextPopulationSize < population.length; k += numberOfOffsprings) {
 				int[] parents = selectParents();
 				// int[] parents = rouletteSelection();
-				
+
 				offspring = applyCrossover(parents);
-				triangleIndexes = shuffleArray(triangleIndexes);
-				
+
 				// Loop through either one or two offsprings
 				for (int j = 0; j < numberOfOffsprings; j++) {
 					if (r.nextDouble() <= mutationProbability) {
-						for (int tm = 0; tm < numberOfTriangleMutations; tm++) {
-							offspring[j] = offspring[j].applyMutation(triangleIndexes[tm]);
-						}
+						offspring[j] = offspring[j].applyMutation();
 					}
 					offspring[j].evaluate();
 
@@ -282,18 +277,20 @@ public class GeneticAlgorithm extends SearchMethod {
 
 		return totalFitness;
 	}
-
-	private int[] shuffleArray(int[] ar) {
-		// If running on Java 6 or older, use `new Random()` on RHS here
-		Random rnd = new Random();
-		for (int i = ar.length - 1; i > 0; i--) {
-			int index = rnd.nextInt(i + 1);
-			// Simple swap
-			int a = ar[index];
-			ar[index] = ar[i];
-			ar[i] = a;
-		}
-
-		return ar;
-	}
+	
+	  private int[] shuffleArray(int[] ar)
+	  {
+	    // If running on Java 6 or older, use `new Random()` on RHS here
+	    Random rnd = new Random();
+	    for (int i = ar.length - 1; i > 0; i--)
+	    {
+	      int index = rnd.nextInt(i + 1);
+	      // Simple swap
+	      int a = ar[index];
+	      ar[index] = ar[i];
+	      ar[i] = a;
+	    }
+	    
+	    return ar;
+	  }
 }

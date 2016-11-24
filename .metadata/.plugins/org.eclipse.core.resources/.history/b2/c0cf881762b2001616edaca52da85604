@@ -60,7 +60,7 @@ public class GeneticAlgorithm extends SearchMethod {
 			Solution[] offspring = new Solution[numberOfOffsprings];
 			Solution[] nextPopulation = new Solution[populationSize];
 			int nextPopulationSize = 0;
-
+			int counter = 0;
 			// Used to choose random triangles to mutate
 			int[] triangleIndexes = new int[instance.getNumberOfTriangles()];
 			for (int t = 0; t < instance.getNumberOfTriangles(); t++) {
@@ -77,6 +77,7 @@ public class GeneticAlgorithm extends SearchMethod {
 				// Loop through either one or two offsprings
 				for (int j = 0; j < numberOfOffsprings; j++) {
 					if (r.nextDouble() <= mutationProbability) {
+						counter ++;
 						for (int tm = 0; tm < numberOfTriangleMutations; tm++) {
 							offspring[j] = offspring[j].applyMutation(triangleIndexes[tm]);
 						}

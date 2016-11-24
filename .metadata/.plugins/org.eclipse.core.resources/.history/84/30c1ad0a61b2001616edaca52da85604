@@ -70,15 +70,14 @@ public class GeneticAlgorithm extends SearchMethod {
 			for (int k = 0; nextPopulationSize < population.length; k += numberOfOffsprings) {
 				int[] parents = selectParents();
 				// int[] parents = rouletteSelection();
-				
+
 				offspring = applyCrossover(parents);
-				triangleIndexes = shuffleArray(triangleIndexes);
-				
+
 				// Loop through either one or two offsprings
 				for (int j = 0; j < numberOfOffsprings; j++) {
 					if (r.nextDouble() <= mutationProbability) {
 						for (int tm = 0; tm < numberOfTriangleMutations; tm++) {
-							offspring[j] = offspring[j].applyMutation(triangleIndexes[tm]);
+							offspring[j] = offspring[j].applyMutation();
 						}
 					}
 					offspring[j].evaluate();

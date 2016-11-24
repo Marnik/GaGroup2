@@ -14,8 +14,8 @@ public class Main {
 	public static final double MUTATION_PROBABILIY = 1;	//actual probability = 0.25*1/100 = 0.0025
 	public static int TOURNAMENT_SIZE = 3;
 	public static boolean ITERATE_OVER_TOURNAMENT =	false;	//default: false; if set to true, the algorithm will iterate over all tournament sizes from 3 to Population size
-	public static final int NUMBER_OF_OFFSPRINGS = 2; // Has to be 1 or 2
-	public static final int NUMBER_OF_TRIANGLE_MUTATIONS = 2;
+	public static final int NUMBER_OF_OFFSPRINGS = 2;
+	public static final int NUMBER_OF_TRIANGLE_MUTATIONS = 3;
 
 	public static boolean KEEP_WINDOWS_OPEN = false;
 

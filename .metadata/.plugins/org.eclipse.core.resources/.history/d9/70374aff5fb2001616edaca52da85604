@@ -63,8 +63,9 @@ public class Solution {
 		fitness = Math.sqrt(sum);
 	}
 
-	public Solution applyMutation(int triangleIndex) {
+	public Solution applyMutation() {
 		Solution temp = this.copy();
+		int triangleIndex = r.nextInt(instance.getNumberOfTriangles());
 		int valueIndex = r.nextInt(VALUES_PER_TRIANGLE);
 		if (valueIndex < 4) {
 			temp.values[triangleIndex * VALUES_PER_TRIANGLE + valueIndex] = r.nextInt(256);
