@@ -37,6 +37,31 @@ public class Solution {
 			}
 		}
 	}
+	
+	//initialize with pre-given triangle values
+	public void initialize (int [] values) {
+		this.values = values;
+	}
+	
+	public void initializeColorValues(int [] values) {
+		this.values = new int[instance.getNumberOfTriangles() * VALUES_PER_TRIANGLE];
+		
+		for (int triangleIndex = 0; triangleIndex < instance.getNumberOfTriangles(); triangleIndex++) {
+			for (int i = 0; i < 4; i++) {
+				this.values[triangleIndex * VALUES_PER_TRIANGLE + i] = values [i];
+			}
+		}
+	}
+	
+	public void initializeVerticeValues(int [] values) {
+		this.values = new int[instance.getNumberOfTriangles() * VALUES_PER_TRIANGLE];
+		
+		for (int triangleIndex = 0; triangleIndex < instance.getNumberOfTriangles(); triangleIndex++) {
+			for (int i = 4; i < 10; i++) {
+				this.values[triangleIndex * VALUES_PER_TRIANGLE + i] = values [i-4];
+			}
+		}
+	}
 
 	public void evaluate() {
 		BufferedImage generatedImage = createImage();
@@ -76,6 +101,7 @@ public class Solution {
 						.nextInt(instance.getImageHeight() + 1);
 			}
 		}
+		temp.printValues();
 		return temp;
 	}
 
@@ -199,6 +225,14 @@ public class Solution {
 
 	public double getFitness() {
 		return fitness;
+	}
+	
+	public String printValues () {
+		String print = "";
+		for (int i=0; i<getValues().length-1; i++) {
+			print += getValues()[i] + ";";
+		}
+		return print += getValues()[getValues().length-1];
 	}
 
 	public Solution copy() {
