@@ -20,6 +20,7 @@ public class Solution {
 		this.instance = instance;
 		r = new Random();
 		initialize();
+		initializeAsDiverseAsPossible();
 	}
 
 	public void initialize() {
@@ -38,27 +39,105 @@ public class Solution {
 		}
 	}
 	
+	//initializes solution with triangles as big as possible meaning, covering the whole screen. 
+	//There are only 4 possible triangle initialisations possible 
+	public void initializeAsBigAsPossible () {		
+		values = new int[instance.getNumberOfTriangles() * VALUES_PER_TRIANGLE];
+		
+		int xmax = instance.getImageWidth();
+		int xmin = 0;
+		int ymax = instance.getImageHeight();
+		int ymin = 0;
+		
+		int [][] points = {{xmin, ymin}, {xmin, ymax}, {xmax, ymin}, {xmax, ymax}};
+		
+		int [][][] triangles = {{points[0], points [1], points [2]}, {points [0], points[1], points[3]}, {points[0], points [2], points [3]},{points[1], points [2], points[3]}};
+
+		for (int triangleIndex = 0; triangleIndex < instance.getNumberOfTriangles(); triangleIndex++) {
+			// initialize HSB and Alpha
+			for (int j = 0; j < 4; j++) {
+				values[triangleIndex*VALUES_PER_TRIANGLE + j] = r.nextInt(256);
+				// System.out.println(values[triangleIndex*VALUES_PER_TRIANGLE + j]);
+			}
+			int k = r.nextInt(3);
+			values[triangleIndex*VALUES_PER_TRIANGLE + 4] = triangles[k][0][0];
+			values[triangleIndex*VALUES_PER_TRIANGLE + 5] = triangles[k][0][1];
+			values[triangleIndex*VALUES_PER_TRIANGLE + 6] = triangles[k][1][0];
+			values[triangleIndex*VALUES_PER_TRIANGLE + 7] = triangles[k][1][1];
+			values[triangleIndex*VALUES_PER_TRIANGLE + 8] = triangles[k][2][0];
+			values[triangleIndex*VALUES_PER_TRIANGLE + 9] = triangles[k][2][1];
+		}
+	}
+	
+	
+	public void initializeAsDiverseAsPossible () {		
+		values = new int[instance.getNumberOfTriangles() * VALUES_PER_TRIANGLE];
+		
+		int [][] colorValues = new int [4][instance.getNumberOfTriangles()];
+		int [][] verticeValues = new int [6][instance.getNumberOfTriangles()];
+		
+		for (int i=0; i<instance.getNumberOfTriangles(); i++) {
+			colorValues[0][i] = colorValues[1][i] = colorValues[2][i] = colorValues[3][i] = 255 - i*255/(instance.getNumberOfTriangles()-1);  
+			verticeValues[0][i] = verticeValues[2][i] = verticeValues[4][i] = instance.getImageWidth()-1 - i*(instance.getImageWidth()-1)/(instance.getNumberOfTriangles()-1);
+			verticeValues[1][i] = verticeValues[3][i] = verticeValues[5][i] = instance.getImageHeight()-1 - i*(instance.getImageHeight()-1)/(instance.getNumberOfTriangles()-1);
+		}
+		int randomPoint = r.nextInt(instance.getNumberOfTriangles()-1);;
+		boolean solutionIsNew;
+		for (int triangleIndex = 0; triangleIndex < instance.getNumberOfTriangles(); triangleIndex++) {
+			// initialize HSB and Alpha
+			for (int j = 0; j < 4; j++) {
+				solutionIsNew=false;
+				while (!solutionIsNew) {
+					if (colorValues[j][randomPoint]!=-1) {
+						values[triangleIndex*VALUES_PER_TRIANGLE + j] = colorValues[j][randomPoint];
+						colorValues[j][randomPoint] = -1;
+						solutionIsNew=true;
+					}
+					randomPoint = r.nextInt(instance.getNumberOfTriangles());
+				}
+			}
+			for (int j=0; j<6; j++) {
+				solutionIsNew=false;
+				while (!solutionIsNew) {
+					if (verticeValues[j][randomPoint]!=-1) {
+						values[triangleIndex*VALUES_PER_TRIANGLE + j+4] = verticeValues[j][randomPoint];
+						verticeValues[j][randomPoint] = -1;
+						solutionIsNew=true;
+					}
+					randomPoint = r.nextInt(instance.getNumberOfTriangles());
+				}
+			}
+		}
+		@SuppressWarnings("unused")
+		int l= 0;
+
+	}	
+	
 	//initialize with pre-given triangle values
 	public void initialize (int [] values) {
 		this.values = values;
 	}
 	
+	//values [] has to be of size triangleNumber*4
 	public void initializeColorValues(int [] values) {
 		this.values = new int[instance.getNumberOfTriangles() * VALUES_PER_TRIANGLE];
 		
 		for (int triangleIndex = 0; triangleIndex < instance.getNumberOfTriangles(); triangleIndex++) {
 			for (int i = 0; i < 4; i++) {
 				this.values[triangleIndex * VALUES_PER_TRIANGLE + i] = values [i];
+				this.values[triangleIndex * VALUES_PER_TRIANGLE + i] = values [triangleIndex*4 + i];
 			}
 		}
 	}
 	
+	//values [] has to be of size triangleNumber*6
 	public void initializeVerticeValues(int [] values) {
 		this.values = new int[instance.getNumberOfTriangles() * VALUES_PER_TRIANGLE];
 		
 		for (int triangleIndex = 0; triangleIndex < instance.getNumberOfTriangles(); triangleIndex++) {
 			for (int i = 4; i < 10; i++) {
 				this.values[triangleIndex * VALUES_PER_TRIANGLE + i] = values [i-4];
+				this.values[triangleIndex * VALUES_PER_TRIANGLE + i] = values [triangleIndex * 6 + i-4];
 			}
 		}
 	}
