@@ -13,6 +13,9 @@ public class Solution {
 
 	protected ProblemInstance instance;
 	protected int[] values;
+	protected double [] normalisedValues;
+	protected int[] inversionOrder;
+	protected int[] inversionArrayPointer;
 	protected double fitness;
 	protected Random r;
 
@@ -26,6 +29,19 @@ public class Solution {
 	public void initialize() {
 		values = new int[instance.getNumberOfTriangles() * VALUES_PER_TRIANGLE];
 
+		normalisedValues = new double [values.length];
+		inversionOrder = new int [values.length];
+		inversionArrayPointer = new int [values.length];
+		
+		switch (Main.INITIALIZATION_METHOD) {
+		case "standard": initializeStandard(); break;
+		case "diverse": initializeAsDiverseAsPossible(); break;
+		case "big": initializeAsBigAsPossible(); break;
+		default: initializeStandard(); break;
+		}
+	}
+	
+	public void initializeStandard() {
 		for (int triangleIndex = 0; triangleIndex < instance.getNumberOfTriangles(); triangleIndex++) {
 			// initialize HSB and Alpha
 			for (int i = 0; i < 4; i++) {
@@ -44,6 +60,7 @@ public class Solution {
 	public void initializeAsBigAsPossible () {		
 		values = new int[instance.getNumberOfTriangles() * VALUES_PER_TRIANGLE];
 		
+	public void initializeAsBigAsPossible () {
 		int xmax = instance.getImageWidth();
 		int xmin = 0;
 		int ymax = instance.getImageHeight();
@@ -73,6 +90,7 @@ public class Solution {
 	public void initializeAsDiverseAsPossible () {		
 		values = new int[instance.getNumberOfTriangles() * VALUES_PER_TRIANGLE];
 		
+	public void initializeAsDiverseAsPossible () {			
 		int [][] colorValues = new int [4][instance.getNumberOfTriangles()];
 		int [][] verticeValues = new int [6][instance.getNumberOfTriangles()];
 		
@@ -82,6 +100,7 @@ public class Solution {
 			verticeValues[1][i] = verticeValues[3][i] = verticeValues[5][i] = instance.getImageHeight()-1 - i*(instance.getImageHeight()-1)/(instance.getNumberOfTriangles()-1);
 		}
 		int randomPoint = r.nextInt(instance.getNumberOfTriangles()-1);;
+		int randomPoint = r.nextInt(instance.getNumberOfTriangles());
 		boolean solutionIsNew;
 		for (int triangleIndex = 0; triangleIndex < instance.getNumberOfTriangles(); triangleIndex++) {
 			// initialize HSB and Alpha
@@ -353,5 +372,146 @@ public class Solution {
 		int[] ys = new int[] { getYFromVertex1(triangleIndex), getYFromVertex2(triangleIndex),
 				getYFromVertex3(triangleIndex) };
 		return new Polygon(xs, ys, 3);
+	}
+}
+
+	public void applyInversion() {	
+		int [] newValues = values.clone();
+
+		int randomValue = 0;
+		for (int i=0; i<instance.getNumberOfTriangles()*VALUES_PER_TRIANGLE; i++) {
+			randomValue = r.nextInt(instance.getNumberOfTriangles()*VALUES_PER_TRIANGLE);
+			boolean applicable = false;
+			if ((randomValue)%10<4 && i%10<4) applicable = true;
+			if ((randomValue)%10>=4 && i%10>=4) applicable = true;
+			
+			while (!isEmpty(randomValue) || !applicable) {
+				randomValue = r.nextInt(instance.getNumberOfTriangles()*VALUES_PER_TRIANGLE) ;
+				if ((randomValue)%10<4 && i%10<4) applicable = true;
+				if ((randomValue)%10>=4 && i%10>=4) applicable = true;
+			}
+			values[randomValue] = newValues[i];
+			inversionOrder[randomValue] = i+1;
+			inversionArrayPointer[i] = randomValue;
+		}
+		for (int i=0; i<inversionOrder.length; i++) {
+			inversionOrder[i] -= 1;
+		}
+	}
+	
+	public void applyNormalisedInversion() {
+		double [] newValues = normalise(values);
+		//reinitialisation to make sure they are empty
+		
+		//int [] newValues = values.clone();
+		
+//		inversionOrder = new int [values.length];
+//		inversionArrayPointer = new int [values.length];
+		int randomValue = 0;
+		for (int i=0; i<instance.getNumberOfTriangles()*VALUES_PER_TRIANGLE; i++) {
+			randomValue = r.nextInt(instance.getNumberOfTriangles()*VALUES_PER_TRIANGLE) + 1;
+			
+			while (!isEmpty(randomValue)) {
+				randomValue = r.nextInt(instance.getNumberOfTriangles()*VALUES_PER_TRIANGLE) + 1;
+			}
+			normalisedValues[randomValue-1] = newValues[i];
+			inversionOrder[i] = randomValue;
+			inversionArrayPointer[randomValue-1] = i;
+		}
+		for (int i=0; i<inversionOrder.length; i++) {
+			inversionOrder[i] -= 1;
+		}
+	}
+	
+	public void applyReordering() {
+		int [] newValues = values.clone();
+		for (int i=0; i<values.length; i++) {
+			values[inversionOrder[i]] = newValues[i];
+		}
+	}
+	
+	public void applyNormalisedReordering() {
+		double [] newValues = normalisedValues.clone();
+		for (int i=0; i<values.length; i++) {
+			normalisedValues[i] = newValues[inversionOrder[i]];
+		}
+		values = denormalise(normalisedValues);
+	}
+
+	private double[] normalise(int [] startValues) {
+		double [] normalisedValues = new double [startValues.length];
+		for (int i=0; i<instance.getNumberOfTriangles(); i++) {
+			for (int j=0; j<4; j++) {
+				normalisedValues [i*VALUES_PER_TRIANGLE + j] = (startValues[i*VALUES_PER_TRIANGLE + j]/256.0) * 1000000;
+			}
+			for (int j=4; j<9; j=j+2) {
+				normalisedValues [i*VALUES_PER_TRIANGLE + j] = (startValues [i*VALUES_PER_TRIANGLE + j]/(double)instance.getImageWidth()) * 1000000;
+				normalisedValues [i*VALUES_PER_TRIANGLE + j+1] = (startValues [i*VALUES_PER_TRIANGLE + j+1]/(double)instance.getImageHeight() * 1000000);
+			}
+		}
+		return normalisedValues;
+	}
+	
+private int[] denormalise(double[] normalisedValues) {
+//		for (int j=0; j<instance.getNumberOfTriangles()*VALUES_PER_TRIANGLE; j++) {
+//			System.out.println((startValues [j]));
+//		}
+	
+	int [] denormalisedValues = new int [normalisedValues.length];
+		
+		for (int i=0; i<instance.getNumberOfTriangles(); i++) {
+			for (int j=0; j<4; j++) {
+				denormalisedValues [i*VALUES_PER_TRIANGLE + j] = (int)Math.floor((normalisedValues[i*VALUES_PER_TRIANGLE + j]/ 1000000.0) * 255);
+			}
+			for (int j=4; j<9; j=j+2) {
+				denormalisedValues [i*VALUES_PER_TRIANGLE + j] = (int)Math.floor((normalisedValues[i*VALUES_PER_TRIANGLE + j] / 1000000.0) * instance.getImageWidth());
+				denormalisedValues [i*VALUES_PER_TRIANGLE + j+1] = (int)Math.floor((normalisedValues[i*VALUES_PER_TRIANGLE + j+1] / 1000000.0) * instance.getImageHeight());
+			}
+		}
+//		for (int j=0; j<instance.getNumberOfTriangles()*VALUES_PER_TRIANGLE; j++) {
+//			if (startValues [j]>256) {
+//				System.out.println((j) + " : " + (startValues [j]));
+//			}
+//		}
+		return denormalisedValues;
+	}
+
+	private boolean isEmpty(int randomValue) {
+		for (int i=0; i<inversionOrder.length; i++) {
+			if (inversionOrder[randomValue]>0) return false;
+		}
+		return true;
+	}
+	
+	public int[] getInversionOrder() {
+		return inversionOrder;
+	}
+
+	public int[] getInversionArrayPointer() {
+		return inversionArrayPointer;
+	}
+	
+	public int getInversionOrderIndex(int index) {
+		return inversionOrder[index];
+	}
+	
+	public void setInversionOrderIndex(int index, int value) {
+		this.inversionOrder[index] = value;
+	}
+	
+	public int getInversionArrayPointerIndex(int index) {
+		return inversionArrayPointer[index];
+	}
+	
+	public double[] getNormalisedValues() {
+		return normalisedValues;
+	}
+	
+	public double getNormalisedValue (int index) {
+		return this.normalisedValues[index];
+	}
+	
+	public void setNormalisedValue (int index, double value) {
+		this.normalisedValues[index] = value;
 	}
 }

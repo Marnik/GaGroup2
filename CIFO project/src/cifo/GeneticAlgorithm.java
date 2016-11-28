@@ -57,6 +57,14 @@ public class GeneticAlgorithm extends SearchMethod {
 
 	public void evolve() {
 		while (currentGeneration <= numberOfGenerations) {
+			if (Main.INCREMENT_RATE!=0 && currentGeneration%Main.INCREMENT_RATE==0) {
+				System.out.println("INCREMENTED");
+				numberOfTriangleMutations++;
+			}
+			if (Main.DECREMENT_RATE != 0 && numberOfTriangleMutations>0 && currentGeneration%Main.DECREMENT_RATE==0) {
+				System.out.println("DECREMENTED");
+				numberOfTriangleMutations++;
+			}
 			Solution[] offspring = new Solution[numberOfOffsprings];
 			Solution[] nextPopulation = new Solution[populationSize];
 			int nextPopulationSize = 0;
@@ -187,7 +195,17 @@ public class GeneticAlgorithm extends SearchMethod {
 		return rouletteWheel;
 	}
 
+	
 	public Solution[] applyCrossover(int[] parents) {
+		switch (Main.CROSSOVER_METHOD) {
+		case "standard": return applyStandardCrossover(parents);
+		case "cycle": return applyPositionCrossover(parents);
+		case "PMXO": return applyPositionCrossover(parents);
+		default: return applyStandardCrossover(parents);
+		}
+	}
+
+	public Solution[] applyStandardCrossover(int[] parents) {
 		Solution firstParent = population[parents[0]];
 		Solution secondParent = population[parents[1]];
 		Solution offspring[] = new Solution[numberOfOffsprings];
@@ -205,6 +223,133 @@ public class GeneticAlgorithm extends SearchMethod {
 			}
 		}
 
+		return offspring;
+	}
+	
+	public Solution[] applyPositionCrossover(int[] parents) {
+		//initialisation & inversion
+		Solution firstParent = population[parents[0]].copy();
+		Solution secondParent = population[parents[1]].copy();
+//		for (int j=0; j<instance.getNumberOfTriangles()*Solution.VALUES_PER_TRIANGLE; j++) {
+//			if (firstParent.getValue(j)<0) System.out.println("Initial First at " + j + ": " + firstParent.getValue(j));
+//		}
+//		for (int j=0; j<instance.getNumberOfTriangles()*Solution.VALUES_PER_TRIANGLE; j++) {
+//			if (secondParent.getValue(j)<0) System.out.println("Initial second at " + j + ": " + secondParent.getValue(j));
+//		}
+		
+		firstParent.applyInversion();
+		secondParent.applyInversion();
+		Solution offspring[] = new Solution[numberOfOffsprings];
+		
+//		for (int j=0; j<instance.getNumberOfTriangles()*Solution.VALUES_PER_TRIANGLE; j++) {
+//			if (firstParent.getValue(j)<0) System.out.println("First at " + j + ": " + firstParent.getValue(j));
+//		}
+//		
+//		for (int j=0; j<instance.getNumberOfTriangles()*Solution.VALUES_PER_TRIANGLE; j++) {
+//			if (secondParent.getValue(j)<0) System.out.println("Second at " + j + ": " + secondParent.getValue(j));
+//		}
+		
+		//crossover
+		switch(Main.CROSSOVER_METHOD) {
+			default: 
+			case "cycle": 
+				offspring [0] = applyCycleCrossover(firstParent, secondParent); 
+				if (numberOfOffsprings == 2) {
+					offspring [1] = applyCycleCrossover(secondParent, firstParent);
+				}
+				break;
+			case "PMXO":
+				int windowStartPoint = r.nextInt(firstParent.getValues().length - 1);
+				int windowEndPoint = r.nextInt(firstParent.getValues().length-windowStartPoint - 1) + windowStartPoint + 1;
+				offspring[0] = applyPartiallyMatchedCrossover (firstParent, secondParent, windowStartPoint, windowEndPoint);
+				if (numberOfOffsprings == 2) {
+					offspring [1] = applyPartiallyMatchedCrossover(secondParent, firstParent, windowStartPoint, windowEndPoint);
+				}
+				break;
+				
+		}
+
+		//reordering
+		offspring[0].applyReordering();
+		if (numberOfOffsprings == 2) {
+			offspring[1].applyReordering();
+		}
+		
+		return offspring;
+	}
+
+	private Solution applyPartiallyMatchedCrossover(Solution firstParent, Solution secondParent, int startCrossPoint, int endCrossPoint) {
+		Solution offspring = firstParent.copy();
+		
+		for (int i=0; i<firstParent.getValues().length; i++) {
+			
+			//if value not in window
+			if (i<startCrossPoint || i>endCrossPoint) {
+				
+				//if orderValue in secondParent window, use first parent's according value
+				int indexAtFirstParent = firstParent.getInversionOrderIndex(i);
+				if (isInWindow(indexAtFirstParent, secondParent, startCrossPoint, endCrossPoint)) {
+					while (isInWindow(indexAtFirstParent, secondParent, startCrossPoint, endCrossPoint)) {
+						indexAtFirstParent = firstParent.getInversionOrderIndex(secondParent.getInversionArrayPointerIndex(indexAtFirstParent));
+					}
+					offspring.setValue(i, firstParent.getValue(firstParent.getInversionArrayPointerIndex(indexAtFirstParent)));
+					//offspring.setInversionOrderIndex(i, firstParent.getInversionOrderIndex(secondParent.getInversionArrayPointerIndex(indexAtFirstParent)));
+					offspring.setInversionOrderIndex(i, indexAtFirstParent);
+
+				}
+				
+				//else, use first parent's value
+				else {
+					offspring.setValue(i, firstParent.getValue(i));
+					offspring.setInversionOrderIndex(i, indexAtFirstParent);
+				}
+			}
+			
+			//else: copy values from secondParent
+			else {
+				offspring.setValue(i, secondParent.getValue(i));
+				offspring.setInversionOrderIndex(i, secondParent.getInversionOrderIndex(i));
+			}
+		}
+		
+		return offspring;
+	}
+
+	private boolean isInWindow(int inversionOrderIndex, Solution secondParent, int startCrossPoint, int endCrossPoint) {
+		if (secondParent.getInversionArrayPointerIndex(inversionOrderIndex)<startCrossPoint || secondParent.getInversionArrayPointerIndex(inversionOrderIndex)>endCrossPoint) {
+			return false;
+		}
+		else {
+			return true;
+		}
+	}
+
+	private Solution applyCycleCrossover(Solution firstParent, Solution secondParent) {
+		//int cyclicPointer = r.nextInt(instance.getNumberOfTriangles()*Solution.VALUES_PER_TRIANGLE);
+		int cyclicPointer = 0;
+		Solution offspring = firstParent.copy();
+		for (int i=0; i<instance.getNumberOfTriangles()*Solution.VALUES_PER_TRIANGLE; i++) {
+			offspring.setValue(i, -1);
+		}
+//		for (int runs=0; runs<2; runs++) {
+//			if (runs==0) cyclicPointer = (r.nextInt(instance.getNumberOfTriangles())*Solution.VALUES_PER_TRIANGLE) + r.nextInt(4);
+//			if (runs==1) cyclicPointer = (r.nextInt(instance.getNumberOfTriangles())*Solution.VALUES_PER_TRIANGLE) + r.nextInt(6) + 4;
+		cyclicPointer = r.nextInt(instance.getNumberOfTriangles()*Solution.VALUES_PER_TRIANGLE);
+			while (offspring.getValue(firstParent.getInversionArrayPointerIndex(cyclicPointer))==-1) {
+				int position = firstParent.getInversionArrayPointerIndex(cyclicPointer);
+				offspring.setValue(position, firstParent.getValue(position));
+				offspring.setInversionOrderIndex(position, firstParent.getInversionOrderIndex(position));
+				cyclicPointer = secondParent.getInversionOrderIndex(position);
+
+			}
+//		}
+		
+		for (int i=0; i<instance.getNumberOfTriangles()*Solution.VALUES_PER_TRIANGLE; i++) {
+			if (offspring.getValue(i) ==-1) {
+				offspring.setValue(i, secondParent.getValue(i)); 
+				offspring.setInversionOrderIndex(i, secondParent.getInversionOrderIndex(i));
+			}
+		}
 		return offspring;
 	}
 
