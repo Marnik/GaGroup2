@@ -8,14 +8,14 @@ public class Main {
 
 	public static final int NUMBER_OF_TRIANGLES = 100;		//fixed
 
-	public static final int NUMBER_OF_RUNS = 5;			//30-50 runs for report; 10 runs for testing
+	public static final int NUMBER_OF_RUNS = 10;			//30-50 runs for report; 10 runs for testing
 	public static final int NUMBER_OF_GENERATIONS = 2000;	//fixed to 2000
 	public static final int POPULATION_SIZE = 25;			//fixed to 25
 	public static final double MUTATION_PROBABILIY = 1;	//actual probability = 0.25*1/100 = 0.0025
-	public static int TOURNAMENT_SIZE = 20;
+	public static int TOURNAMENT_SIZE = 3;
 	public static boolean ITERATE_OVER_TOURNAMENT =	false;	//default: false; if set to true, the algorithm will iterate over all tournament sizes from 3 to Population size
 	public static final int NUMBER_OF_OFFSPRINGS = 2; // Has to be 1 or 2
-	public static int NUMBER_OF_TRIANGLE_MUTATIONS = 1;
+	public static final int NUMBER_OF_TRIANGLE_MUTATIONS = 2;
 
 	public static boolean KEEP_WINDOWS_OPEN = false;
 
@@ -24,13 +24,6 @@ public class Main {
 	public static double[] executionTimes = new double[NUMBER_OF_RUNS];
 	public static int currentRun = 0;
 	public static int currentTournamentRun = TOURNAMENT_SIZE + 1;
-	
-	public static int[][] pTypes = new int[NUMBER_OF_RUNS][NUMBER_OF_GENERATIONS];
-	public static int[][] hammingDistances = new int[NUMBER_OF_RUNS][NUMBER_OF_GENERATIONS];
-	public static double[][] pVariances = new double[NUMBER_OF_RUNS][NUMBER_OF_GENERATIONS];
-	public static double[][] hammingDistanceRatios = new double[NUMBER_OF_RUNS][NUMBER_OF_GENERATIONS];
-	public static double[][] averageFitnesses = new double[NUMBER_OF_RUNS][NUMBER_OF_GENERATIONS];
-	public static double[][] bestFitnesses = new double[NUMBER_OF_RUNS][NUMBER_OF_GENERATIONS];
 	
 	public static void main(String[] args) {
 		run();
@@ -54,7 +47,6 @@ public class Main {
 			ProblemInstance.view.getFrame().dispose();
 		}
 		if (currentRun < NUMBER_OF_RUNS) {
-			NUMBER_OF_TRIANGLE_MUTATIONS = 4;
 			run();
 		} else {
 			presentResults();
