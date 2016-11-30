@@ -8,6 +8,7 @@ public class Main {
 
 	public static final int NUMBER_OF_TRIANGLES = 100;		//fixed
 	public static final int NUMBER_OF_TRIANGLES = 100;			//fixed
+	public static final int NUMBER_OF_TRIANGLES = 100;				//fixed
 
 	public static final int NUMBER_OF_RUNS = 10;			//30-50 runs for report; 10 runs for testing
 	public static final int NUMBER_OF_GENERATIONS = 2000;	//fixed to 2000
@@ -21,6 +22,10 @@ public class Main {
 	public static int NUMBER_OF_GENERATIONS = 2000;		//fixed to 2000
 	public static final int POPULATION_SIZE = 25;				//fixed to 25
 	public static final double MUTATION_PROBABILIY = 1;			//actual probability = MUTATION_PROBABILITY*NUMBER_OF_TRIANGLE_MUTATIONS/100
+	public static final int NUMBER_OF_RUNS = 10;						//30-50 runs for report; 10 runs for testing
+	public static int NUMBER_OF_GENERATIONS = 2000;					//fixed to 2000
+	public static final int POPULATION_SIZE = 25;					//fixed to 25
+	public static final double MUTATION_PROBABILIY = 1;				//actual probability = MUTATION_PROBABILITY*NUMBER_OF_TRIANGLE_MUTATIONS/100
 	public static int TOURNAMENT_SIZE = 20;
 	public static final int NUMBER_OF_OFFSPRINGS = 2; 			// Has to be 1 or 2
 	public static int NUMBER_OF_TRIANGLE_MUTATIONS = 10;
@@ -32,7 +37,20 @@ public class Main {
 	public static boolean ITERATE_OVER_GENERATION_SIZE = true;	//default: false, this is just for testing purposes as the generation size is fixed to 2000. I used this value to be able to optimise the mutation probabilities
 	public static String INITIALIZATION_METHOD = "standard";		//"standard", "diverse", "big"
 	public static String CROSSOVER_METHOD = "cycle";			//"standard", "cycle", "PMXO"
+	public static final int NUMBER_OF_OFFSPRINGS = 2; 				// Has to be 1 or 2
 
+	
+	public static int NUMBER_OF_TRIANGLE_MUTATIONS = 3;
+	
+	public static int INCREMENT_RATE =	0;							//incremental rate: generations after which mutation probability is incremented, default= 0 --> not applied
+	public static int DECREMENT_RATE =	0;							//decremental rate: generations after which mutation will be decremented, default 0 --> not applied	
+	public static boolean ITERATE_OVER_TOURNAMENT =	false;			//default: false; if set to true, the algorithm will iterate over all tournament sizes from 3 to Population size
+	public static boolean ITERATE_OVER_MUTATIONS =	false;			//default: false; if set to true, the algorithm will iterate over all tournament sizes from 3 to Population size
+	public static boolean ITERATE_OVER_GENERATION_SIZE = false;		//default: false, this is just for testing purposes as the generation size is fixed to 2000. I used this value to be able to optimise the mutation probabilities
+	public static String INITIALIZATION_METHOD = "diverse_spread";		//"standard", "diverse", "big", "diverse_spread"
+	public static String CROSSOVER_METHOD = "cycle";				//"standard", "cycle", "PMXO", "cycle_triangle", "PMXO_triangle" (only takes split points between triangles)
+	public static String SELECTION_METHOD = "tournament";			//"tournament", "roulette"
+	
 	public static boolean KEEP_WINDOWS_OPEN = false;
 
 	public static Solution[] bestSolutions = new Solution[NUMBER_OF_RUNS];
@@ -43,9 +61,11 @@ public class Main {
 	public static int currentMutationSize = 0;
 	
 	public static void main(String[] args) {
+		System.out.print("Initialization Method: " + INITIALIZATION_METHOD + ", XO-Method: " + CROSSOVER_METHOD + ", Selection Method: " + SELECTION_METHOD + ", Mutation function: " + MUTATION_FUNCTION + ", #Triangle Mutations: " + NUMBER_OF_TRIANGLE_MUTATIONS);
 		if (ITERATE_OVER_GENERATION_SIZE) {
 			ITERATE_OVER_MUTATIONS = true;
 			NUMBER_OF_GENERATIONS = 100;
+			NUMBER_OF_GENERATIONS = 10;
 		}
 		run();
 	}
@@ -83,14 +103,22 @@ public class Main {
 			if (ITERATE_OVER_GENERATION_SIZE) {
 				if (NUMBER_OF_GENERATIONS<1000) {
 					NUMBER_OF_GENERATIONS += 100;
+				if (NUMBER_OF_GENERATIONS<100) {
 					if (currentMutationSize <= 10 && (ITERATE_OVER_MUTATIONS)) {
 						currentRun = 0;
 						NUMBER_OF_TRIANGLE_MUTATIONS = currentMutationSize;
 						run();
+					} else {
+					NUMBER_OF_GENERATIONS += 10;
+					currentRun = 0;
+					currentMutationSize = 1;
+					NUMBER_OF_TRIANGLE_MUTATIONS = 1;
+					run();
 					}
 				}
 			}
 			else if (currentMutationSize <= 5 && (ITERATE_OVER_MUTATIONS)) {
+			else if (currentMutationSize <= 10 && (ITERATE_OVER_MUTATIONS)) {
 				currentRun = 0;
 				NUMBER_OF_TRIANGLE_MUTATIONS = currentMutationSize;
 				run();

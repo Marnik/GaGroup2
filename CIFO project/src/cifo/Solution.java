@@ -36,11 +36,14 @@ public class Solution {
 		switch (Main.INITIALIZATION_METHOD) {
 		case "standard": initializeStandard(); break;
 		case "diverse": initializeAsDiverseAsPossible(); break;
+		case "diverse_spread": initializeAsDiverseAndSpreadAsPossible(); break;
 		case "big": initializeAsBigAsPossible(); break;
 		default: initializeStandard(); break;
 		}
 	}
 	
+
+
 	public void initializeStandard() {
 		for (int triangleIndex = 0; triangleIndex < instance.getNumberOfTriangles(); triangleIndex++) {
 			// initialize HSB and Alpha
@@ -89,9 +92,75 @@ public class Solution {
 	
 	public void initializeAsDiverseAsPossible () {		
 		values = new int[instance.getNumberOfTriangles() * VALUES_PER_TRIANGLE];
+	private void initializeAsDiverseAndSpreadAsPossible() {
+		//100 Triangles * 3 points per triangle  = 300 points
+		//200*200 field
+		int [][] colorValues = initializeDiverseColorValues();
+		double squarePerPoint = ((instance.getImageHeight()+1)*(instance.getImageWidth()+1))/600.0;
+		double lengthPerPoint = Math.sqrt(squarePerPoint);
+		double numbersPerXAxis = instance.getImageWidth()/lengthPerPoint;
+		double numbersPerYAxis = instance.getImageHeight()/lengthPerPoint;
+		int [][][] verticeValues = new int [(int)numbersPerXAxis][(int)numbersPerYAxis][2];
 		
 	public void initializeAsDiverseAsPossible () {			
+		for (int i=0; i<(int)numbersPerXAxis; i++) {
+			int xVertice = (int)(i*lengthPerPoint); 
+			for (int j = 0; j<(int)numbersPerYAxis; j++) {
+				verticeValues [i][j][0] = xVertice;
+				verticeValues [i][j][1] = (int)(j*lengthPerPoint);
+			}
+		}
+		int randomPointX;
+		int randomPointY;
+		boolean solutionIsNew;
+		for (int triangleIndex = 0; triangleIndex < instance.getNumberOfTriangles(); triangleIndex++) {
+			// initialize HSB and Alpha
+			for (int j = 0; j < 4; j++) {
+				solutionIsNew=false;
+				randomPointX = r.nextInt(instance.getNumberOfTriangles());
+				while (!solutionIsNew) {
+					if (colorValues[j][randomPointX]!=-1) {
+						values[triangleIndex*VALUES_PER_TRIANGLE + j] = colorValues[j][randomPointX];
+						colorValues[j][randomPointX] = -1;
+						solutionIsNew=true;
+					}
+					randomPointX = r.nextInt(instance.getNumberOfTriangles());
+				}
+			}
+			randomPointX = r.nextInt((int)numbersPerXAxis);
+			randomPointY = r.nextInt((int)numbersPerYAxis);
+			for (int j=0; j<5; j = j+2) {
+				solutionIsNew=false;
+				randomPointX = r.nextInt((int)numbersPerXAxis);
+				randomPointY = r.nextInt((int)numbersPerYAxis);
+				while (!solutionIsNew) {
+					if (verticeValues[randomPointX][randomPointY]!=null) {
+						values[triangleIndex*VALUES_PER_TRIANGLE + j + 4] = verticeValues[randomPointX][randomPointY][j%2];
+						values[triangleIndex*VALUES_PER_TRIANGLE + j+1 + 4] = verticeValues[randomPointX][randomPointY][(j+1)%2];
+						verticeValues[randomPointX][randomPointY] = null;
+						solutionIsNew=true;
+					}
+					randomPointX = r.nextInt((int)numbersPerXAxis);
+					randomPointY = r.nextInt((int)numbersPerYAxis);
+				}
+			}
+		}
+		int i=0;
+		
+	}
+	
+	public int [] [] initializeDiverseColorValues() {
 		int [][] colorValues = new int [4][instance.getNumberOfTriangles()];
+		for (int i=0; i<instance.getNumberOfTriangles(); i++) {
+			colorValues[0][i] = 255 - i*255/(instance.getNumberOfTriangles());
+			colorValues[1][i] = colorValues[0][i] - (int)Math.round(1.0/3 * ((i+1)*255.0/instance.getNumberOfTriangles()-(i*255.0/instance.getNumberOfTriangles())));
+			colorValues[2][i] = colorValues[0][i] - (int)Math.round(2.0/3 * ((i+1)*255.0/instance.getNumberOfTriangles()-(i*255.0/instance.getNumberOfTriangles())));
+			colorValues[3][i] = colorValues[0][i] - (int)Math.round(3.0/3 * ((i+1)*255.0/instance.getNumberOfTriangles()-(i*255.0/instance.getNumberOfTriangles())));
+			}
+		return colorValues;
+	}
+	
+	public int [] [] initializeDiverseVerticeValues() {
 		int [][] verticeValues = new int [6][instance.getNumberOfTriangles()];
 		
 		for (int i=0; i<instance.getNumberOfTriangles(); i++) {
@@ -100,6 +169,15 @@ public class Solution {
 			verticeValues[1][i] = verticeValues[3][i] = verticeValues[5][i] = instance.getImageHeight()-1 - i*(instance.getImageHeight()-1)/(instance.getNumberOfTriangles()-1);
 		}
 		int randomPoint = r.nextInt(instance.getNumberOfTriangles()-1);;
+		return verticeValues;
+	}
+	
+	public void initializeAsDiverseAsPossible () {			
+		int [][] colorValues;
+		int [][] verticeValues;
+		
+		colorValues = this.initializeDiverseColorValues();
+		verticeValues = this.initializeDiverseVerticeValues();
 		int randomPoint = r.nextInt(instance.getNumberOfTriangles());
 		boolean solutionIsNew;
 		for (int triangleIndex = 0; triangleIndex < instance.getNumberOfTriangles(); triangleIndex++) {
