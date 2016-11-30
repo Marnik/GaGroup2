@@ -63,7 +63,6 @@ public class GeneticAlgorithm extends SearchMethod {
 			}
 			if (Main.DECREMENT_RATE != 0 && numberOfTriangleMutations>0 && currentGeneration%Main.DECREMENT_RATE==0) {
 				System.out.println("DECREMENTED");
-				numberOfTriangleMutations++;
 				numberOfTriangleMutations--;
 			}
 			
@@ -88,8 +87,6 @@ public class GeneticAlgorithm extends SearchMethod {
 			}
 
 			for (int k = 0; nextPopulationSize < population.length; k += numberOfOffsprings) {
-				int[] parents = selectParents();
-				// int[] parents = rouletteSelection();
 				int[] parents = tournamentSelection();
 				if (Main.SELECTION_METHOD == "tournament") {
 					parents = tournamentSelection();
@@ -108,13 +105,11 @@ public class GeneticAlgorithm extends SearchMethod {
 							offspring[j] = offspring[j].applyMutation(triangleIndexes[tm]);
 						}
 					}
-					offspring[j].evaluate();
 					if (Main.CROSSOVER_METHOD!="optimal") offspring[j].evaluate();
 
 					// Generating two offsprings resulted in one extra offspring
 					// if this converts to true.
 					// Eliminate the offspring with the lowest fitness
-					if (nextPopulationSize == population.length) {
 					if (nextPopulationSize >= population.length) {
 						int worstFitnessIndex = getWorstIndex(nextPopulation);
 						if (offspring[j].getFitness() < nextPopulation[worstFitnessIndex].getFitness()) {
@@ -175,16 +170,12 @@ public class GeneticAlgorithm extends SearchMethod {
 	}
 
 	// Method to select parents using the tournament selection method
-	public int[] selectParents() {
 	public int[] tournamentSelection() {
 		int[] parents = new int[2];
 		parents[0] = r.nextInt(populationSize);
 		int firstTemp = 0;
 		int secondTemp;
 		for (int i = 0; i < tournamentSize; i++) {
-			int temp = r.nextInt(populationSize);
-			if (population[temp].getFitness() < population[parents[0]].getFitness()) {
-				parents[0] = temp;
 			firstTemp = r.nextInt(populationSize);
 			if (population[firstTemp].getFitness() < population[parents[0]].getFitness()) {
 				parents[0] = firstTemp;
@@ -193,9 +184,6 @@ public class GeneticAlgorithm extends SearchMethod {
 
 		parents[1] = r.nextInt(populationSize);
 		for (int i = 0; i < tournamentSize; i++) {
-			int temp = r.nextInt(populationSize);
-			if (population[temp].getFitness() < population[parents[1]].getFitness()) {
-				parents[1] = temp;
 			secondTemp = r.nextInt(populationSize);
 			while (secondTemp == firstTemp) {
 				secondTemp = r.nextInt(populationSize);
@@ -270,7 +258,6 @@ public class GeneticAlgorithm extends SearchMethod {
 		Solution [] s = new Solution [numberOfOffsprings];
 		switch (Main.CROSSOVER_METHOD) {
 		case "standard": return applyStandardCrossover(parents);
-		case "cycle": return applyPositionCrossover(parents);
 		case "PMXO_triangle":
 		case "cycle_triangle":
 		case "cycle":
@@ -341,9 +328,6 @@ public class GeneticAlgorithm extends SearchMethod {
 		int windowEndPoint;
 		int cyclicPointer;
 		switch(Main.CROSSOVER_METHOD) {
-			default: 
-			case "cycle": 
-				offspring [0] = applyCycleCrossover(firstParent, secondParent); 
 			default:
 			case "standard": 
 				offspring = applyStandardCrossover(parents);
@@ -352,13 +336,10 @@ public class GeneticAlgorithm extends SearchMethod {
 				cyclicPointer = r.nextInt(instance.getNumberOfTriangles()*Solution.VALUES_PER_TRIANGLE);
 				offspring [0] = applyCycleCrossover(firstParent, secondParent, cyclicPointer); 
 				if (numberOfOffsprings == 2) {
-					offspring [1] = applyCycleCrossover(secondParent, firstParent);
 					offspring [1] = applyCycleCrossover(secondParent, firstParent, cyclicPointer);
 				}
 				break;
 			case "PMXO":
-				int windowStartPoint = r.nextInt(firstParent.getValues().length - 1);
-				int windowEndPoint = r.nextInt(firstParent.getValues().length-windowStartPoint - 1) + windowStartPoint + 1;
 				windowStartPoint = r.nextInt(firstParent.getValues().length - 1);
 				windowEndPoint = r.nextInt(firstParent.getValues().length-windowStartPoint - 1) + windowStartPoint + 1;
 				offspring[0] = applyPartiallyMatchedCrossover (firstParent, secondParent, windowStartPoint, windowEndPoint);
@@ -486,13 +467,13 @@ public class GeneticAlgorithm extends SearchMethod {
 		String [] mutation_methods = {"standard", "triangle", "PMXO", "PMXO_triangle", "cycle_triangle", "six_way", "seperate", "random_triangle"};
 		String optimalMethod = "standard";
 		Main.CROSSOVER_METHOD = "standard";
-		Solution [] optimal = applyPositionCrossover(parents);
+		Solution [] optimal = applyCrossover(parents);
 		for (int i=0; i<optimal.length; i++) {
 			optimal[i].evaluate();
 		}
 		for (int i=1; i<mutation_methods.length; i++) {
 			Main.CROSSOVER_METHOD = mutation_methods[i];
-			Solution [] currentCrossOverSolution = applyPositionCrossover(parents);
+			Solution [] currentCrossOverSolution = applyCrossover(parents);
 			if (improvedFitness(currentCrossOverSolution, optimal)) {
 				optimalMethod = mutation_methods[i];
 				optimal = currentCrossOverSolution;
@@ -561,10 +542,8 @@ public class GeneticAlgorithm extends SearchMethod {
 		}
 	}
 
-	private Solution applyCycleCrossover(Solution firstParent, Solution secondParent) {
 	private Solution applyCycleCrossover(Solution firstParent, Solution secondParent, int cyclicPointer) {
 		//int cyclicPointer = r.nextInt(instance.getNumberOfTriangles()*Solution.VALUES_PER_TRIANGLE);
-		int cyclicPointer = 0;
 		Solution offspring = firstParent.copy();
 		for (int i=0; i<instance.getNumberOfTriangles()*Solution.VALUES_PER_TRIANGLE; i++) {
 			offspring.setValue(i, -1);
@@ -572,7 +551,6 @@ public class GeneticAlgorithm extends SearchMethod {
 //		for (int runs=0; runs<2; runs++) {
 //			if (runs==0) cyclicPointer = (r.nextInt(instance.getNumberOfTriangles())*Solution.VALUES_PER_TRIANGLE) + r.nextInt(4);
 //			if (runs==1) cyclicPointer = (r.nextInt(instance.getNumberOfTriangles())*Solution.VALUES_PER_TRIANGLE) + r.nextInt(6) + 4;
-		cyclicPointer = r.nextInt(instance.getNumberOfTriangles()*Solution.VALUES_PER_TRIANGLE);
 			while (offspring.getValue(firstParent.getInversionArrayPointerIndex(cyclicPointer))==-1) {
 				int position = firstParent.getInversionArrayPointerIndex(cyclicPointer);
 				offspring.setValue(position, firstParent.getValue(position));
