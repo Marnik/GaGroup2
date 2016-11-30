@@ -49,7 +49,10 @@ public class Main {
 	public static boolean ITERATE_OVER_GENERATION_SIZE = false;		//default: false, this is just for testing purposes as the generation size is fixed to 2000. I used this value to be able to optimise the mutation probabilities
 	public static String INITIALIZATION_METHOD = "diverse_spread";		//"standard", "diverse", "big", "diverse_spread"
 	public static String CROSSOVER_METHOD = "cycle";				//"standard", "cycle", "PMXO", "cycle_triangle", "PMXO_triangle" (only takes split points between triangles)
+	public static String INITIALIZATION_METHOD = "diverse";			//"standard", "diverse", "big", "diverse_spread"
+	public static String CROSSOVER_METHOD = "optimal";				//"standard", "cycle", "PMXO", "six_way", "seperate", "random_triangle", "cycle_triangle", "PMXO_triangle" (only takes split points between triangles)
 	public static String SELECTION_METHOD = "tournament";			//"tournament", "roulette"
+	public static String MUTATION_FUNCTION = "exponential";	//"linear", "exponential", every other value: not applied
 	
 	public static boolean KEEP_WINDOWS_OPEN = false;
 
@@ -59,6 +62,7 @@ public class Main {
 	public static int currentRun = 0;
 	public static int currentTournamentRun = TOURNAMENT_SIZE + 1;
 	public static int currentMutationSize = 0;
+	public static int currentMutationSize = 1;
 	
 	public static void main(String[] args) {
 		System.out.print("Initialization Method: " + INITIALIZATION_METHOD + ", XO-Method: " + CROSSOVER_METHOD + ", Selection Method: " + SELECTION_METHOD + ", Mutation function: " + MUTATION_FUNCTION + ", #Triangle Mutations: " + NUMBER_OF_TRIANGLE_MUTATIONS);
