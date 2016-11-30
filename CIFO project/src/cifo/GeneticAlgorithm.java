@@ -1,7 +1,15 @@
 package cifo;
 
+import java.text.DateFormat;
 import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.Calendar;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Random;
 
 public class GeneticAlgorithm extends SearchMethod {
@@ -18,6 +26,10 @@ public class GeneticAlgorithm extends SearchMethod {
 	protected Solution[] population;
 	protected Random r;
 
+	protected int pType, hammingDistance, maxPossibleDistance;
+	protected double stdDev, pVariance, hammingDistanceRatio;
+
+
 	public GeneticAlgorithm() {
 		instance = new ProblemInstance(Main.NUMBER_OF_TRIANGLES);
 		populationSize = Main.POPULATION_SIZE;
@@ -29,6 +41,7 @@ public class GeneticAlgorithm extends SearchMethod {
 		printFlag = false;
 		currentGeneration = 0;
 		r = new Random();
+
 	}
 
 	public void run() {
@@ -70,10 +83,10 @@ public class GeneticAlgorithm extends SearchMethod {
 			for (int k = 0; nextPopulationSize < population.length; k += numberOfOffsprings) {
 				int[] parents = selectParents();
 				// int[] parents = rouletteSelection();
-				
+
 				offspring = applyCrossover(parents);
 				triangleIndexes = shuffleArray(triangleIndexes);
-				
+
 				// Loop through either one or two offsprings
 				for (int j = 0; j < numberOfOffsprings; j++) {
 					if (r.nextDouble() <= mutationProbability) {
@@ -103,7 +116,25 @@ public class GeneticAlgorithm extends SearchMethod {
 			population = survivorSelection(nextPopulation);
 			updateCurrentBest();
 			updateInfo();
+			generateDiversityMeasures();
+			
 			currentGeneration++;
+			/*
+			if (currentGeneration == 200){
+				System.out.println("Changing triangle mutations from " + numberOfTriangleMutations + " to 2");
+				Main.NUMBER_OF_TRIANGLE_MUTATIONS = 2;
+				numberOfTriangleMutations = 2;
+				System.out.println("New #TM: " + numberOfTriangleMutations);
+			}
+			if (currentGeneration == 400){
+				System.out.println("Changing triangle mutations from " + numberOfTriangleMutations + " to 1");
+				Main.NUMBER_OF_TRIANGLE_MUTATIONS = 1;
+				numberOfTriangleMutations = 1;
+				System.out.println("New #TM: " + numberOfTriangleMutations);
+			}
+			*/
+
+
 		}
 	}
 
@@ -295,5 +326,125 @@ public class GeneticAlgorithm extends SearchMethod {
 		}
 
 		return ar;
+	}
+
+	// Calculate diversity measures: Phenotypic, standard deviation
+	private void generateDiversityMeasures() {
+		double totalFitness = 0.0;
+		pVariance = 0.0;
+		hammingDistance = 0;
+		hammingDistanceRatio = 0.0;
+		// Keeps track of the maximum possible distance of the total, which
+		maxPossibleDistance = 0;
+
+		for (int i = 0; i < populationSize; i++) {
+			totalFitness += population[i].getFitness();
+		}
+		double averageFitness = totalFitness / populationSize;
+
+		HashSet uniqueFitnesses = new HashSet();
+		for (int individual = 0; individual < populationSize; individual++) {
+			pVariance += Math.pow(population[individual].getFitness() - averageFitness, 2);
+			uniqueFitnesses.add(population[individual].getFitness());
+
+			getHammingDistance(individual);
+		}
+
+		hammingDistanceRatio = (double) hammingDistance / maxPossibleDistance;
+
+		pType = uniqueFitnesses.size();
+
+		storeMeasures(averageFitness);
+
+		// Write to file only if last generation of last run has been reached.
+		if (Main.currentRun == Main.NUMBER_OF_RUNS-1 && currentGeneration == Main.NUMBER_OF_GENERATIONS) {
+			try {
+				writeMeasures();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+
+	}
+
+	// Stores different measures into arrays so they can be averaged later and
+	// saved to a file for analysis.
+	private void storeMeasures(double averageFitness) {
+		Main.pTypes[Main.currentRun][currentGeneration - 1] = pType;
+		Main.hammingDistances[Main.currentRun][currentGeneration - 1] = hammingDistance;
+		Main.pVariances[Main.currentRun][currentGeneration - 1] = pVariance;
+		Main.hammingDistanceRatios[Main.currentRun][currentGeneration - 1] = hammingDistanceRatio;
+		Main.averageFitnesses[Main.currentRun][currentGeneration - 1] = averageFitness;
+		Main.bestFitnesses[Main.currentRun][currentGeneration - 1] = getBest(population).getFitness();
+	}
+
+	private void getHammingDistance(int individual) {
+		for (int secondIndividual = 1; secondIndividual < populationSize; secondIndividual++) {
+			if (individual != secondIndividual) {
+				for (int valueIndex = 0; valueIndex < Main.NUMBER_OF_TRIANGLES
+						* Solution.VALUES_PER_TRIANGLE; valueIndex++) {
+					if (population[individual].values[valueIndex] != population[secondIndividual].values[valueIndex]) {
+						hammingDistance++;
+					}
+					maxPossibleDistance++;
+				}
+			}
+		}
+	}
+
+	private void writeMeasures() throws IOException {
+		// Calculate averages first
+		int[] avgPTypeAr = new int[Main.NUMBER_OF_GENERATIONS];
+		int[] avgHammingDistanceAr = new int[Main.NUMBER_OF_GENERATIONS];
+		double[] avgPVarianceAr = new double[Main.NUMBER_OF_GENERATIONS];
+		double[] avgHammingDistanceRatioAr = new double[Main.NUMBER_OF_GENERATIONS];
+		double[] avgFitnessAr = new double[Main.NUMBER_OF_GENERATIONS];
+		double[] avgBestFitnessAr = new double[Main.NUMBER_OF_GENERATIONS];
+		
+		for (int generation = 0; generation < Main.NUMBER_OF_GENERATIONS; generation++) {
+			int avgPType = 0;
+			int avgHammingDistance = 0;
+			double avgPVariance = 0.0;
+			double avgHammingDistanceRatio = 0.0;
+			double avgFitness = 0.0;
+			double avgBestFitness = 0.0;
+			
+			for (int run = 0; run < Main.NUMBER_OF_RUNS; run++) {
+					avgPType += Main.pTypes[run][generation];
+					avgHammingDistance += Main.hammingDistances[run][generation];
+					avgPVariance += Main.pVariances[run][generation];
+					avgHammingDistanceRatio += Main.hammingDistanceRatios[run][generation];
+					avgFitness += Main.averageFitnesses[run][generation];
+					avgBestFitness += Main.bestFitnesses[run][generation];
+			}
+			avgPTypeAr[generation] = avgPType / Main.NUMBER_OF_RUNS;
+			avgHammingDistanceAr[generation] = avgHammingDistance / Main.NUMBER_OF_RUNS;
+			avgPVarianceAr[generation] = avgPVariance / Main.NUMBER_OF_RUNS;
+			avgHammingDistanceRatioAr[generation] = avgHammingDistanceRatio / Main.NUMBER_OF_RUNS;
+			avgFitnessAr[generation] = avgFitness / Main.NUMBER_OF_RUNS;
+			avgBestFitnessAr[generation] = avgBestFitness / Main.NUMBER_OF_RUNS;
+			
+		}
+		String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(Calendar.getInstance().getTime());
+		
+		File file = new File("data/" + timeStamp + " - " + mutationProbability + "-" + numberOfTriangleMutations + ".txt");
+
+		// if file doesnt exists, then create it
+		if (!file.exists()) {
+			file.createNewFile();
+		}
+
+		FileWriter fw = new FileWriter(file.getAbsoluteFile());
+		BufferedWriter bw = new BufferedWriter(fw);
+		
+		bw.write("Generation \t PType \t Hamming Distance \t PVariance \t Hamming Distance Ratio \t Avg Fitness \t Best Fitness \n");
+		
+		for(int i = 0; i < Main.NUMBER_OF_GENERATIONS; i++){
+			bw.write(i + "\t" + avgPTypeAr[i] + "\t" + avgHammingDistanceAr[i] + "\t" + String.valueOf(avgPVarianceAr[i]).replace('.', ',') + "\t" + String.valueOf(avgHammingDistanceRatioAr[i]).replace('.', ',') + "\t" + String.valueOf(avgFitnessAr[i]).replace('.', ',') + "\t" + String.valueOf(avgBestFitnessAr[i]).replace('.', ',') + "\n");
+		}
+		bw.close();
+
+
 	}
 }

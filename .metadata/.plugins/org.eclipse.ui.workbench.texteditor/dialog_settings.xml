@@ -8,6 +8,7 @@
 		<item value="true" key="wrap"/>
 		<item value="false" key="wholeword"/>
 		<list key="findhistory">
+			<item value="getBest"/>
 			<item value="getbest"/>
 			<item value="system.out"/>
 			<item value="rouletteWheel"/>
@@ -15,7 +16,6 @@
 			<item value="population[parents]"/>
 			<item value="fitness"/>
 			<item value="temp = "/>
-			<item value="temp"/>
 		</list>
 		<list key="replacehistory">
 			<item value="invertedProbabilities"/>
