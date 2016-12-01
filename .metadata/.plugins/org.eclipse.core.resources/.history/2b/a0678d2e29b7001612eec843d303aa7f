@@ -128,7 +128,7 @@ public class GeneticAlgorithm extends SearchMethod {
 							offspring[j] = offspring[j].applyMutation(triangleIndexes[tm]);
 						}
 					}
-
+					offspring[j].evaluate();
 					if (Main.CROSSOVER_METHOD != "optimal")
 						offspring[j].evaluate();
 

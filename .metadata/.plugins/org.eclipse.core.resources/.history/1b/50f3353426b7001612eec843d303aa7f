@@ -92,11 +92,6 @@ public class GeneticAlgorithm extends SearchMethod {
 				// System.out.println("MUTATION FUNCTION APPLIED, MUTATION
 				// CHANGED TO: " + numberOfTriangleMutations);
 			}
-			if (Main.MUTATION_FUNCTION == "prefixed") {
-				getPrefixedTriangleMutation();
-				// System.out.println("MUTATION FUNCTION APPLIED, MUTATION
-				// CHANGED TO: " + numberOfTriangleMutations);
-			}
 
 			Solution[] offspring = new Solution[numberOfOffsprings];
 			Solution[] nextPopulation = new Solution[populationSize];
@@ -128,7 +123,7 @@ public class GeneticAlgorithm extends SearchMethod {
 							offspring[j] = offspring[j].applyMutation(triangleIndexes[tm]);
 						}
 					}
-
+					offspring[j].evaluate();
 					if (Main.CROSSOVER_METHOD != "optimal")
 						offspring[j].evaluate();
 
@@ -155,24 +150,21 @@ public class GeneticAlgorithm extends SearchMethod {
 			generateDiversityMeasures();
 
 			currentGeneration++;
-		}
-	}
+			/*
+			 * if (currentGeneration == 200){
+			 * System.out.println("Changing triangle mutations from " +
+			 * numberOfTriangleMutations + " to 2");
+			 * Main.NUMBER_OF_TRIANGLE_MUTATIONS = 2; numberOfTriangleMutations
+			 * = 2; System.out.println("New #TM: " + numberOfTriangleMutations);
+			 * } if (currentGeneration == 400){
+			 * System.out.println("Changing triangle mutations from " +
+			 * numberOfTriangleMutations + " to 1");
+			 * Main.NUMBER_OF_TRIANGLE_MUTATIONS = 1; numberOfTriangleMutations
+			 * = 1; System.out.println("New #TM: " + numberOfTriangleMutations);
+			 * }
+			 */
 
-	private void getPrefixedTriangleMutation() {
-
-		if (currentGeneration == 200) {
-			System.out.println("Changing triangle mutations from " + numberOfTriangleMutations + " to 2");
-			Main.NUMBER_OF_TRIANGLE_MUTATIONS = 2;
-			numberOfTriangleMutations = 2;
-			System.out.println("New #TM: " + numberOfTriangleMutations);
 		}
-		if (currentGeneration == 400) {
-			System.out.println("Changing triangle mutations from " + numberOfTriangleMutations + " to 1");
-			Main.NUMBER_OF_TRIANGLE_MUTATIONS = 1;
-			numberOfTriangleMutations = 1;
-			System.out.println("New #TM: " + numberOfTriangleMutations);
-		}
-
 	}
 
 	private int getAdaptedExponentialTriangleMutation(int currentGeneration2, int numberOfTriangleMutations2) {
@@ -395,7 +387,7 @@ public class GeneticAlgorithm extends SearchMethod {
 		int windowEndPoint;
 		int cyclicPointer;
 		switch (Main.CROSSOVER_METHOD) {
-
+		
 		default:
 		case "standard":
 			offspring = applyStandardCrossover(parents);
@@ -404,6 +396,7 @@ public class GeneticAlgorithm extends SearchMethod {
 			cyclicPointer = r.nextInt(instance.getNumberOfTriangles() * Solution.VALUES_PER_TRIANGLE);
 			offspring[0] = applyCycleCrossover(firstParent, secondParent, cyclicPointer);
 			if (numberOfOffsprings == 2) {
+				offspring[1] = applyCycleCrossover(secondParent, firstParent);
 				offspring[1] = applyCycleCrossover(secondParent, firstParent, cyclicPointer);
 			}
 			break;
@@ -617,6 +610,7 @@ public class GeneticAlgorithm extends SearchMethod {
 			return true;
 		}
 	}
+
 
 	private Solution applyCycleCrossover(Solution firstParent, Solution secondParent, int cyclicPointer) {
 		// int cyclicPointer =
