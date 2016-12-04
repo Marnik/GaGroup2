@@ -23,10 +23,12 @@ public class Solution {
 		this.instance = instance;
 		r = new Random();
 		initialize();
+		initializeAsDiverseAsPossible();
 	}
 
 	public void initialize() {
 		values = new int[instance.getNumberOfTriangles() * VALUES_PER_TRIANGLE];
+
 		normalisedValues = new double [values.length];
 		inversionOrder = new int [values.length];
 		inversionArrayPointer = new int [values.length];
@@ -58,6 +60,9 @@ public class Solution {
 	
 	//initializes solution with triangles as big as possible meaning, covering the whole screen. 
 	//There are only 4 possible triangle initialisations possible 
+	public void initializeAsBigAsPossible () {		
+		values = new int[instance.getNumberOfTriangles() * VALUES_PER_TRIANGLE];
+		
 	public void initializeAsBigAsPossible () {
 		int xmax = instance.getImageWidth();
 		int xmin = 0;
@@ -83,7 +88,10 @@ public class Solution {
 			values[triangleIndex*VALUES_PER_TRIANGLE + 9] = triangles[k][2][1];
 		}
 	}
-
+	
+	
+	public void initializeAsDiverseAsPossible () {		
+		values = new int[instance.getNumberOfTriangles() * VALUES_PER_TRIANGLE];
 	private void initializeAsDiverseAndSpreadAsPossible() {
 		//100 Triangles * 3 points per triangle  = 300 points
 		//200*200 field
@@ -94,6 +102,7 @@ public class Solution {
 		double numbersPerYAxis = instance.getImageHeight()/lengthPerPoint;
 		int [][][] verticeValues = new int [(int)numbersPerXAxis][(int)numbersPerYAxis][2];
 		
+	public void initializeAsDiverseAsPossible () {			
 		for (int i=0; i<(int)numbersPerXAxis; i++) {
 			int xVertice = (int)(i*lengthPerPoint); 
 			for (int j = 0; j<(int)numbersPerYAxis; j++) {
@@ -136,6 +145,7 @@ public class Solution {
 				}
 			}
 		}
+		int i=0;
 		
 	}
 	
@@ -152,10 +162,13 @@ public class Solution {
 	
 	public int [] [] initializeDiverseVerticeValues() {
 		int [][] verticeValues = new int [6][instance.getNumberOfTriangles()];
+		
 		for (int i=0; i<instance.getNumberOfTriangles(); i++) {
+			colorValues[0][i] = colorValues[1][i] = colorValues[2][i] = colorValues[3][i] = 255 - i*255/(instance.getNumberOfTriangles()-1);  
 			verticeValues[0][i] = verticeValues[2][i] = verticeValues[4][i] = instance.getImageWidth()-1 - i*(instance.getImageWidth()-1)/(instance.getNumberOfTriangles()-1);
 			verticeValues[1][i] = verticeValues[3][i] = verticeValues[5][i] = instance.getImageHeight()-1 - i*(instance.getImageHeight()-1)/(instance.getNumberOfTriangles()-1);
 		}
+		int randomPoint = r.nextInt(instance.getNumberOfTriangles()-1);;
 		return verticeValues;
 	}
 	
@@ -192,6 +205,8 @@ public class Solution {
 				}
 			}
 		}
+		@SuppressWarnings("unused")
+		int l= 0;
 
 	}	
 	
@@ -246,7 +261,7 @@ public class Solution {
 			sum += red * red + green * green + blue * blue;
 		}
 
-		this.fitness = Math.sqrt(sum);
+		fitness = Math.sqrt(sum);
 	}
 
 	public Solution applyMutation(int triangleIndex) {
@@ -436,6 +451,7 @@ public class Solution {
 				getYFromVertex3(triangleIndex) };
 		return new Polygon(xs, ys, 3);
 	}
+}
 
 	public void applyInversion() {	
 		int [] newValues = values.clone();
