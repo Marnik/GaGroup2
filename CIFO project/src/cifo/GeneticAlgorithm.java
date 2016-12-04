@@ -17,6 +17,7 @@ public class GeneticAlgorithm extends SearchMethod {
 	protected int currentGeneration;
 	protected Solution[] population;
 	protected Random r;
+	protected String crossoverMethod;
 
 	public GeneticAlgorithm() {
 		instance = new ProblemInstance(Main.NUMBER_OF_TRIANGLES);
@@ -28,6 +29,7 @@ public class GeneticAlgorithm extends SearchMethod {
 		numberOfOffsprings = Main.NUMBER_OF_OFFSPRINGS;
 		printFlag = false;
 		currentGeneration = 0;
+		this.crossoverMethod = Main.CROSSOVER_METHOD;
 		r = new Random();
 	}
 
@@ -105,7 +107,8 @@ public class GeneticAlgorithm extends SearchMethod {
 							offspring[j] = offspring[j].applyMutation(triangleIndexes[tm]);
 						}
 					}
-					if (Main.CROSSOVER_METHOD!="optimal") offspring[j].evaluate();
+					//if (crossoverMethod!="optimal") 
+					offspring[j].evaluate();
 
 					// Generating two offsprings resulted in one extra offspring
 					// if this converts to true.
@@ -173,23 +176,25 @@ public class GeneticAlgorithm extends SearchMethod {
 	public int[] tournamentSelection() {
 		int[] parents = new int[2];
 		parents[0] = r.nextInt(populationSize);
-		int firstTemp = 0;
-		int secondTemp;
+		int temp;
 		for (int i = 0; i < tournamentSize; i++) {
-			firstTemp = r.nextInt(populationSize);
-			if (population[firstTemp].getFitness() < population[parents[0]].getFitness()) {
-				parents[0] = firstTemp;
+			temp = r.nextInt(populationSize);
+			if (population[temp].getFitness() < population[parents[0]].getFitness()) {
+				parents[0] = temp;
 			}
 		}
 
 		parents[1] = r.nextInt(populationSize);
+		while (parents[1] == parents[0]) {
+			parents[1] = r.nextInt(populationSize);
+		}
 		for (int i = 0; i < tournamentSize; i++) {
-			secondTemp = r.nextInt(populationSize);
-			while (secondTemp == firstTemp) {
-				secondTemp = r.nextInt(populationSize);
+			temp = r.nextInt(populationSize);
+			while (temp == parents[0]) {
+				temp = r.nextInt(populationSize);
 			}
-			if (population[secondTemp].getFitness() < population[parents[1]].getFitness()) {
-				parents[1] = secondTemp;
+			if (population[temp].getFitness() < population[parents[1]].getFitness()) {
+				parents[1] = temp;
 			}
 		}
 		return parents;
@@ -256,12 +261,11 @@ public class GeneticAlgorithm extends SearchMethod {
 	
 	public Solution[] applyCrossover(int[] parents) {
 		Solution [] s = new Solution [numberOfOffsprings];
-		switch (Main.CROSSOVER_METHOD) {
+		switch (crossoverMethod) {
 		case "standard": return applyStandardCrossover(parents);
 		case "PMXO_triangle":
 		case "cycle_triangle":
 		case "cycle":
-		case "optimal":
 		case "PMXO": return applyPositionCrossover(parents);
 		case "random_triangle":
 			s[0] = applyRandomAfterEachTriangleCrossover(parents);
@@ -275,6 +279,10 @@ public class GeneticAlgorithm extends SearchMethod {
 			s[0] = applySeperateCrossover(parents);
 			s[numberOfOffsprings-1] = applySixWayCrossover(parents);
 			return s;
+		case "optimal":
+			return applyOptimalCrossover (parents);
+		case "optimal_mixture":
+			return applyOptimalMixtureCrossover(parents);
 		default: return applyStandardCrossover(parents);
 		}
 	}
@@ -327,7 +335,7 @@ public class GeneticAlgorithm extends SearchMethod {
 		int windowStartPoint;
 		int windowEndPoint;
 		int cyclicPointer;
-		switch(Main.CROSSOVER_METHOD) {
+		switch(crossoverMethod) {
 			default:
 			case "standard": 
 				offspring = applyStandardCrossover(parents);
@@ -363,10 +371,7 @@ public class GeneticAlgorithm extends SearchMethod {
 				if (numberOfOffsprings == 2) {
 					offspring [1] = applyPartiallyMatchedCrossover(secondParent, firstParent, windowStartPoint, windowEndPoint);
 				}
-				break;
-			case "optimal":
-				offspring = applyOptimalCrossover (parents);
-				break;				
+				break;			
 		}
 
 		//reordering
@@ -464,23 +469,23 @@ public class GeneticAlgorithm extends SearchMethod {
 		
 
 	private Solution[] applyOptimalCrossover(int [] parents) {
-		String [] mutation_methods = {"standard", "triangle", "PMXO", "PMXO_triangle", "cycle_triangle", "six_way", "seperate", "random_triangle"};
+		String [] mutation_methods = {"standard", "cycle", "PMXO", "PMXO_triangle", "cycle_triangle", "six_way", "seperate", "random_triangle"};
 		String optimalMethod = "standard";
-		Main.CROSSOVER_METHOD = "standard";
+		crossoverMethod = "standard";
 		Solution [] optimal = applyCrossover(parents);
 		for (int i=0; i<optimal.length; i++) {
 			optimal[i].evaluate();
 		}
 		for (int i=1; i<mutation_methods.length; i++) {
-			Main.CROSSOVER_METHOD = mutation_methods[i];
+			crossoverMethod = mutation_methods[i];
 			Solution [] currentCrossOverSolution = applyCrossover(parents);
 			if (improvedFitness(currentCrossOverSolution, optimal)) {
 				optimalMethod = mutation_methods[i];
 				optimal = currentCrossOverSolution;
 			}
 		}
-		System.out.println("Mutation Method in generation " + currentGeneration + ": " + optimalMethod);
-		Main.CROSSOVER_METHOD = "optimal";
+		//System.out.println("Mutation Method in generation " + currentGeneration + ": " + optimalMethod);
+		crossoverMethod = "optimal";
 		return optimal;
 	}
 
@@ -494,6 +499,33 @@ public class GeneticAlgorithm extends SearchMethod {
 		}
 		if (fitnessCurrent<fitnessOptimal) return true;
 		return false;
+	}
+	
+	private Solution[] applyOptimalMixtureCrossover(int [] parents) {
+		String [] mutation_methods = {"standard", "cycle", "PMXO", "PMXO_triangle", "cycle_triangle", "six_way", "seperate", "random_triangle"};
+		crossoverMethod = "standard";
+		Solution [] optimal = applyCrossover(parents);
+		for (int i=0; i<optimal.length; i++) {
+			optimal[i].evaluate();
+		}
+		for (int i=1; i<mutation_methods.length; i++) {
+			crossoverMethod = mutation_methods[i];
+			Solution [] currentCrossOverSolution = applyCrossover(parents);
+			optimal = improveFitness(currentCrossOverSolution, optimal);
+		}
+		crossoverMethod = "optimal_mixture";
+		return optimal;
+	}
+
+	private Solution [] improveFitness(Solution[] currentCrossOverSolution, Solution[] optimal) {
+
+		for (int i = 0; i<currentCrossOverSolution.length; i++) {
+			currentCrossOverSolution[i].evaluate();
+			if (currentCrossOverSolution[i].getFitness()<optimal[i].getFitness()) {
+				optimal [i] = currentCrossOverSolution[i];
+			}
+		}
+		return optimal;
 	}
 
 	private Solution applyPartiallyMatchedCrossover(Solution firstParent, Solution secondParent, int startCrossPoint, int endCrossPoint) {

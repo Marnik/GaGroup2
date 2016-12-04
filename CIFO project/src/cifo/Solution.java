@@ -246,7 +246,7 @@ public class Solution {
 			sum += red * red + green * green + blue * blue;
 		}
 
-		fitness = Math.sqrt(sum);
+		this.fitness = Math.sqrt(sum);
 	}
 
 	public Solution applyMutation(int triangleIndex) {
