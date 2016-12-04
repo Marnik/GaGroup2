@@ -9,7 +9,7 @@ public class Main {
 	public static final int NUMBER_OF_TRIANGLES = 100;				//fixed
 	public static final int NUMBER_OF_RUNS = 10;					//30-50 runs for report; 10 runs for testing
 
-	public static int NUMBER_OF_GENERATIONS = 2000;					//fixed to 2000
+	public static int NUMBER_OF_GENERATIONS = 90;					//fixed to 2000
 	public static final int POPULATION_SIZE = 25;					//fixed to 25
 	public static final double MUTATION_PROBABILIY = 1;				//actual probability = MUTATION_PROBABILITY*NUMBER_OF_TRIANGLE_MUTATIONS/100
 	public static int TOURNAMENT_SIZE = 20;
@@ -38,6 +38,12 @@ public class Main {
 
 	public static int currentMutationSize = 1;
 
+	public static int[][] pTypes = new int[NUMBER_OF_RUNS][NUMBER_OF_GENERATIONS];
+	public static int[][] hammingDistances = new int[NUMBER_OF_RUNS][NUMBER_OF_GENERATIONS];
+	public static double[][] pVariances = new double[NUMBER_OF_RUNS][NUMBER_OF_GENERATIONS];
+	public static double[][] hammingDistanceRatios = new double[NUMBER_OF_RUNS][NUMBER_OF_GENERATIONS];
+	public static double[][] averageFitnesses = new double[NUMBER_OF_RUNS][NUMBER_OF_GENERATIONS];
+	public static double[][] bestFitnesses = new double[NUMBER_OF_RUNS][NUMBER_OF_GENERATIONS];
 	
 	public static void main(String[] args) {
 		System.out.println("Initialization Method: " + INITIALIZATION_METHOD + ", XO-Method: " + CROSSOVER_METHOD + ", Selection Method: " + SELECTION_METHOD + ", Mutation function: " + MUTATION_FUNCTION + ", #Triangle Mutations: " + NUMBER_OF_TRIANGLE_MUTATIONS);
