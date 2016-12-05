@@ -6,16 +6,16 @@ import gd.gui.GeneticDrawingApp;
 
 public class Main {
 
+	protected int [][] optimalMethodUsed;
+	
 	public static final int NUMBER_OF_TRIANGLES = 100;				//fixed
-	public static final int NUMBER_OF_RUNS = 10;					//30-50 runs for report; 10 runs for testing
+	public static final int NUMBER_OF_RUNS = 3;					//30-50 runs for report; 10 runs for testing
 
-	public static int NUMBER_OF_GENERATIONS = 90;					//fixed to 2000
+	public static int NUMBER_OF_GENERATIONS = 2000;					//fixed to 2000
 	public static final int POPULATION_SIZE = 25;					//fixed to 25
 	public static final double MUTATION_PROBABILIY = 1;				//actual probability = MUTATION_PROBABILITY*NUMBER_OF_TRIANGLE_MUTATIONS/100
 	public static int TOURNAMENT_SIZE = 20;
 	public static final int NUMBER_OF_OFFSPRINGS = 2; 				// Has to be 1 or 2
-
-	
 	public static int NUMBER_OF_TRIANGLE_MUTATIONS = 1;
 	
 	public static int INCREMENT_RATE =	0;							//incremental rate: generations after which mutation probability is incremented, default= 0 --> not applied
@@ -24,7 +24,7 @@ public class Main {
 	public static boolean ITERATE_OVER_MUTATIONS =	false;			//default: false; if set to true, the algorithm will iterate over all tournament sizes from 3 to Population size
 	public static boolean ITERATE_OVER_GENERATION_SIZE = false;		//default: false, this is just for testing purposes as the generation size is fixed to 2000. I used this value to be able to optimise the mutation probabilities
 	public static String INITIALIZATION_METHOD = "standard";		//"standard", "diverse", "big", "diverse_spread"
-	public static String CROSSOVER_METHOD = "optimal_mixture";		//"standard", "cycle", "PMXO", "six_way", "seperate", "random_triangle", "cycle_triangle", "PMXO_triangle" (only takes split points between triangles), "optimal", "optimal_mixture"
+	public static String CROSSOVER_METHOD = "optimal";				//"standard", "cycle", "PMXO", "six_way", "seperate", "random_triangle", "cycle_triangle", "PMXO_triangle" (only takes split points between triangles), "optimal", "optimal_mixture"
 	public static String SELECTION_METHOD = "tournament";			//"tournament", "roulette"
 	public static String MUTATION_FUNCTION = "exponential";			//"linear", "exponential", every other value: not applied
 
@@ -54,7 +54,7 @@ public class Main {
 		run();
 	}
 
-	public static void addBestSolution(Solution bestSolution, double executionTime) {
+	public static void addBestSolution(Solution bestSolution, double executionTime, String [] optimalMethod) {
 		bestSolutions[currentRun] = bestSolution;
 		bestFitness[currentRun] = bestSolution.getFitness();
 		executionTimes[currentRun] = executionTime;
@@ -64,6 +64,9 @@ public class Main {
 		System.out.print("All runs:");
 		for (int i = 0; i <= currentRun; i++) {
 			System.out.printf("\t%.2f", bestFitness[i]);
+		}
+		for (int i = 0; i<optimalMethod.length; i++) {
+			System.out.println("Optimal Method between generation " + i * (NUMBER_OF_GENERATIONS/optimalMethod.length) + " and " + (i+1) * i * (NUMBER_OF_GENERATIONS/optimalMethod.length) + ": " + optimalMethod[i]);
 		}
 		System.out.println();
 		currentRun++;
