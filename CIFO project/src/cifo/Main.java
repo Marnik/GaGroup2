@@ -16,17 +16,17 @@ public class Main {
 	public static final double MUTATION_PROBABILIY = 1;				//actual probability = MUTATION_PROBABILITY*NUMBER_OF_TRIANGLE_MUTATIONS/100
 	public static int TOURNAMENT_SIZE = 20;
 	public static final int NUMBER_OF_OFFSPRINGS = 2; 				// Has to be 1 or 2
-	public static int NUMBER_OF_TRIANGLE_MUTATIONS = 1;
+	public static int NUMBER_OF_TRIANGLE_MUTATIONS = 10;
 	
-	public static int INCREMENT_RATE =	0;							//incremental rate: generations after which mutation probability is incremented, default= 0 --> not applied
-	public static int DECREMENT_RATE =	0;							//decremental rate: generations after which mutation will be decremented, default 0 --> not applied	
-	public static boolean ITERATE_OVER_TOURNAMENT =	false;			//default: false; if set to true, the algorithm will iterate over all tournament sizes from 3 to Population size
-	public static boolean ITERATE_OVER_MUTATIONS =	false;			//default: false; if set to true, the algorithm will iterate over all tournament sizes from 3 to Population size
-	public static boolean ITERATE_OVER_GENERATION_SIZE = false;		//default: false, this is just for testing purposes as the generation size is fixed to 2000. I used this value to be able to optimise the mutation probabilities
-	public static String INITIALIZATION_METHOD = "standard";		//"standard", "diverse", "big", "diverse_spread"
-	public static String CROSSOVER_METHOD = "optimal";				//"standard", "cycle", "PMXO", "six_way", "seperate", "random_triangle", "cycle_triangle", "PMXO_triangle" (only takes split points between triangles), "optimal", "optimal_mixture"
-	public static String SELECTION_METHOD = "tournament";			//"tournament", "roulette"
-	public static String MUTATION_FUNCTION = "exponential";			//"linear", "exponential", every other value: not applied
+	public static int INCREMENT_RATE =	0;								//incremental rate: generations after which mutation probability is incremented, default= 0 --> not applied
+	public static int DECREMENT_RATE =	0;								//decremental rate: generations after which mutation will be decremented, default 0 --> not applied	
+	public static boolean ITERATE_OVER_TOURNAMENT =	false;				//default: false; if set to true, the algorithm will iterate over all tournament sizes from 3 to Population size
+	public static boolean ITERATE_OVER_MUTATIONS =	false;				//default: false; if set to true, the algorithm will iterate over all tournament sizes from 3 to Population size
+	public static boolean ITERATE_OVER_GENERATION_SIZE = false;			//default: false, this is just for testing purposes as the generation size is fixed to 2000. I used this value to be able to optimise the mutation probabilities
+	public static String INITIALIZATION_METHOD = "diverse_spread";		//"standard", "diverse", "big", "diverse_spread"
+	public static String CROSSOVER_METHOD = "optimal_mixture";					//"standard", "cycle", "PMXO", "six_way", "seperate", "random_triangle", "cycle_triangle", "PMXO_triangle" (only takes split points between triangles), "optimal", "optimal_mixture"
+	public static String SELECTION_METHOD = "tournament";				//"tournament", "roulette"
+	public static String MUTATION_FUNCTION = "linear";				//"linear", "exponential", "prefixed" every other value: not applied
 
 	public static boolean KEEP_WINDOWS_OPEN = false;
 
@@ -65,8 +65,11 @@ public class Main {
 		for (int i = 0; i <= currentRun; i++) {
 			System.out.printf("\t%.2f", bestFitness[i]);
 		}
-		for (int i = 0; i<optimalMethod.length; i++) {
-			System.out.println("Optimal Method between generation " + i * (NUMBER_OF_GENERATIONS/optimalMethod.length) + " and " + (i+1) * i * (NUMBER_OF_GENERATIONS/optimalMethod.length) + ": " + optimalMethod[i]);
+		if (CROSSOVER_METHOD == "optimal") {
+			System.out.println();
+			for (int i = 0; i<optimalMethod.length; i++) {
+				System.out.println("Optimal Method between generation " + i * (NUMBER_OF_GENERATIONS/optimalMethod.length) + " and " + (i+1) * i * (NUMBER_OF_GENERATIONS/optimalMethod.length) + ": " + optimalMethod[i]);
+			}
 		}
 		System.out.println();
 		currentRun++;

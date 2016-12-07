@@ -88,17 +88,24 @@ public class Solution {
 		//100 Triangles * 3 points per triangle  = 300 points
 		//200*200 field
 		int [][] colorValues = initializeDiverseColorValues();
-		double squarePerPoint = ((instance.getImageHeight()+1)*(instance.getImageWidth()+1))/600.0;
-		double lengthPerPoint = Math.sqrt(squarePerPoint);
-		double numbersPerXAxis = instance.getImageWidth()/lengthPerPoint;
-		double numbersPerYAxis = instance.getImageHeight()/lengthPerPoint;
-		int [][][] verticeValues = new int [(int)numbersPerXAxis][(int)numbersPerYAxis][2];
-		
-		for (int i=0; i<(int)numbersPerXAxis; i++) {
-			int xVertice = (int)(i*lengthPerPoint); 
-			for (int j = 0; j<(int)numbersPerYAxis; j++) {
-				verticeValues [i][j][0] = xVertice;
-				verticeValues [i][j][1] = (int)(j*lengthPerPoint);
+		int totalNumberPoints = instance.getNumberOfTriangles()*3;
+		double pointPerAxis = Math.sqrt(totalNumberPoints);
+		int pointPerXAxis = (int)Math.ceil(pointPerAxis);
+		int pointPerYAxis = (int)Math.floor(pointPerAxis);
+		double numbersPerXAxis = instance.getImageWidth()/(pointPerXAxis-1.0);
+		double numbersPerYAxis = instance.getImageHeight()/(pointPerYAxis-1.0);
+		int [][][] verticeValues = new int [pointPerXAxis][pointPerYAxis][2];
+		int currentNumberPoints = 0;
+		for (int i=0; i<pointPerXAxis; i++) {
+			int xVertice = (int)(i*numbersPerXAxis); 
+			for (int j = 0; j<pointPerYAxis; j++) {
+				if (currentNumberPoints<totalNumberPoints) {
+					verticeValues [i][j][0] = xVertice;
+					verticeValues [i][j][1] = (int)(j*numbersPerYAxis);
+					currentNumberPoints++;
+				} else {
+					verticeValues [i][j] = null;
+				}
 			}
 		}
 		int randomPointX;
@@ -118,12 +125,13 @@ public class Solution {
 					randomPointX = r.nextInt(instance.getNumberOfTriangles());
 				}
 			}
-			randomPointX = r.nextInt((int)numbersPerXAxis);
-			randomPointY = r.nextInt((int)numbersPerYAxis);
+			randomPointX = r.nextInt(pointPerXAxis);
+			randomPointY = r.nextInt(pointPerYAxis);
 			for (int j=0; j<5; j = j+2) {
 				solutionIsNew=false;
-				randomPointX = r.nextInt((int)numbersPerXAxis);
-				randomPointY = r.nextInt((int)numbersPerYAxis);
+				randomPointX = r.nextInt(pointPerXAxis);
+				randomPointY = r.nextInt(pointPerYAxis);
+
 				while (!solutionIsNew) {
 					if (verticeValues[randomPointX][randomPointY]!=null) {
 						values[triangleIndex*VALUES_PER_TRIANGLE + j + 4] = verticeValues[randomPointX][randomPointY][j%2];
@@ -131,8 +139,8 @@ public class Solution {
 						verticeValues[randomPointX][randomPointY] = null;
 						solutionIsNew=true;
 					}
-					randomPointX = r.nextInt((int)numbersPerXAxis);
-					randomPointY = r.nextInt((int)numbersPerYAxis);
+					randomPointX = r.nextInt(pointPerXAxis);
+					randomPointY = r.nextInt(pointPerYAxis);
 				}
 			}
 		}

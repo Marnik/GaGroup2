@@ -56,9 +56,9 @@ public class GeneticAlgorithm extends SearchMethod {
 		double endTime = System.currentTimeMillis();
 		double executionTime = (endTime - startTime) / 60000;
 		for (int i=0; i<optimalMethodSelection.length; i++) {
-			int mostCommonMethodUsed = optimalMethodCount[i][0];
+			int mostCommonMethodUsed = 0;
 			for (int j=1; j<optimalMethodCount[i].length; j++) {
-				if (optimalMethodCount[i][j] > mostCommonMethodUsed) mostCommonMethodUsed = optimalMethodCount[i][j];
+				if (optimalMethodCount[i][j] > optimalMethodCount[i][mostCommonMethodUsed]) mostCommonMethodUsed = j;
 			}
 			optimalMethodSelection[i] = mutation_methods[mostCommonMethodUsed];
 		}
@@ -346,36 +346,11 @@ public class GeneticAlgorithm extends SearchMethod {
 		// initialisation & inversion
 		Solution firstParent = population[parents[0]].copy();
 		Solution secondParent = population[parents[1]].copy();
-		// for (int j=0;
-		// j<instance.getNumberOfTriangles()*Solution.VALUES_PER_TRIANGLE; j++)
-		// {
-		// if (firstParent.getValue(j)<0) System.out.println("Initial First at "
-		// + j + ": " + firstParent.getValue(j));
-		// }
-		// for (int j=0;
-		// j<instance.getNumberOfTriangles()*Solution.VALUES_PER_TRIANGLE; j++)
-		// {
-		// if (secondParent.getValue(j)<0) System.out.println("Initial second at
-		// " + j + ": " + secondParent.getValue(j));
-		// }
+
 
 		firstParent.applyInversion();
 		secondParent.applyInversion();
 		Solution offspring[] = new Solution[numberOfOffsprings];
-
-		// for (int j=0;
-		// j<instance.getNumberOfTriangles()*Solution.VALUES_PER_TRIANGLE; j++)
-		// {
-		// if (firstParent.getValue(j)<0) System.out.println("First at " + j +
-		// ": " + firstParent.getValue(j));
-		// }
-		//
-		// for (int j=0;
-		// j<instance.getNumberOfTriangles()*Solution.VALUES_PER_TRIANGLE; j++)
-		// {
-		// if (secondParent.getValue(j)<0) System.out.println("Second at " + j +
-		// ": " + secondParent.getValue(j));
-		// }
 
 		// crossover
 		int windowStartPoint;
@@ -396,9 +371,9 @@ public class GeneticAlgorithm extends SearchMethod {
 			case "PMXO":
 				windowStartPoint = r.nextInt(firstParent.getValues().length - 1);
 				windowEndPoint = r.nextInt(firstParent.getValues().length-windowStartPoint - 1) + windowStartPoint + 1;
-				offspring[0] = applyPartiallyMatchedCrossover (firstParent, secondParent, windowStartPoint, windowEndPoint);
+				offspring[0] = applyPartiallyMappedCrossover (firstParent, secondParent, windowStartPoint, windowEndPoint);
 				if (numberOfOffsprings == 2) {
-					offspring [1] = applyPartiallyMatchedCrossover(secondParent, firstParent, windowStartPoint, windowEndPoint);
+					offspring [1] = applyPartiallyMappedCrossover(secondParent, firstParent, windowStartPoint, windowEndPoint);
 				}
 				break;
 			case "cycle_triangle":
@@ -413,9 +388,9 @@ public class GeneticAlgorithm extends SearchMethod {
 				windowEndPoint = r.nextInt(instance.getNumberOfTriangles()-windowStartPoint - 1) + windowStartPoint + 1;
 				windowStartPoint = windowStartPoint * Solution.VALUES_PER_TRIANGLE;
 				windowEndPoint = windowEndPoint * Solution.VALUES_PER_TRIANGLE;
-				offspring[0] = applyPartiallyMatchedCrossover (firstParent, secondParent, windowStartPoint, windowEndPoint);
+				offspring[0] = applyPartiallyMappedCrossover (firstParent, secondParent, windowStartPoint, windowEndPoint);
 				if (numberOfOffsprings == 2) {
-					offspring [1] = applyPartiallyMatchedCrossover(secondParent, firstParent, windowStartPoint, windowEndPoint);
+					offspring [1] = applyPartiallyMappedCrossover(secondParent, firstParent, windowStartPoint, windowEndPoint);
 				}
 				break;			
 		}
@@ -546,7 +521,7 @@ public class GeneticAlgorithm extends SearchMethod {
 				optimal = currentCrossOverSolution;
 			}
 		}
-		if (currentGeneration != numberOfGenerations) optimalMethodCount[currentGeneration/optimalCount][optimalMethod]++;
+		 if (currentGeneration < 2000) optimalMethodCount[(int)Math.floor(currentGeneration/optimalCount)][optimalMethod]++;
 		crossoverMethod = "optimal";
 		return optimal;
 	}
@@ -593,7 +568,7 @@ public class GeneticAlgorithm extends SearchMethod {
 		return optimal;
 	}
 
-	private Solution applyPartiallyMatchedCrossover(Solution firstParent, Solution secondParent, int startCrossPoint,
+	private Solution applyPartiallyMappedCrossover(Solution firstParent, Solution secondParent, int startCrossPoint,
 			int endCrossPoint) {
 		Solution offspring = firstParent.copy();
 
@@ -651,10 +626,10 @@ public class GeneticAlgorithm extends SearchMethod {
 			offspring.setValue(i, -1);
 		}
 		while (offspring.getValue(firstParent.getInversionArrayPointerIndex(cyclicPointer))==-1) {
-			int position = firstParent.getInversionArrayPointerIndex(cyclicPointer);
-			offspring.setValue(position, firstParent.getValue(position));
-			offspring.setInversionOrderIndex(position, firstParent.getInversionOrderIndex(position));
-			cyclicPointer = secondParent.getInversionOrderIndex(position);
+			cyclicPointer = firstParent.getInversionArrayPointerIndex(cyclicPointer);
+			offspring.setValue(cyclicPointer, firstParent.getValue(cyclicPointer));
+			offspring.setInversionOrderIndex(cyclicPointer, firstParent.getInversionOrderIndex(cyclicPointer));
+			cyclicPointer = secondParent.getInversionOrderIndex(cyclicPointer);
 		}
 
 		for (int i = 0; i < instance.getNumberOfTriangles() * Solution.VALUES_PER_TRIANGLE; i++) {
