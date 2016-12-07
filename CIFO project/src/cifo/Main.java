@@ -24,8 +24,8 @@ public class Main {
 	public static boolean ITERATE_OVER_TOURNAMENT =	false;			//default: false; if set to true, the algorithm will iterate over all tournament sizes from 3 to Population size
 	public static boolean ITERATE_OVER_MUTATIONS =	false;			//default: false; if set to true, the algorithm will iterate over all tournament sizes from 3 to Population size
 	public static boolean ITERATE_OVER_GENERATION_SIZE = false;		//default: false, this is just for testing purposes as the generation size is fixed to 2000. I used this value to be able to optimise the mutation probabilities
-	public static String INITIALIZATION_METHOD = "diverse";			//"standard", "diverse", "big", "diverse_spread"
-	public static String CROSSOVER_METHOD = "cycle";				//"standard", "cycle", "PMXO", "six_way", "seperate", "random_triangle", "cycle_triangle", "PMXO_triangle" (only takes split points between triangles)
+	public static String INITIALIZATION_METHOD = "standard";			//"standard", "diverse", "big", "diverse_spread"
+	public static String CROSSOVER_METHOD = "PMXO";					//"standard", "cycle", "PMXO", "six_way", "seperate", "random_triangle", "cycle_triangle", "PMXO_triangle" (only takes split points between triangles), 4 (Use 4 different methods)
 	public static String SELECTION_METHOD = "tournament";			//"tournament", "roulette"
 	public static String MUTATION_FUNCTION = "prefixed";			//"linear", "exponential", "prefixed" every other value: not applied
 	

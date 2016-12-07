@@ -2,22 +2,23 @@
 <section name="Workbench">
 	<section name="org.eclipse.ui.texteditor.FindReplaceDialog">
 		<item value="false" key="isRegEx"/>
-		<item value="getBest" key="selection"/>
+		<item value="Main.CROSSOVER_METHOD" key="selection"/>
 		<item value="false" key="casesensitive"/>
 		<item value="false" key="incremental"/>
 		<item value="true" key="wrap"/>
 		<item value="false" key="wholeword"/>
 		<list key="findhistory">
-			<item value="getBest"/>
-			<item value="getbest"/>
-			<item value="system.out"/>
-			<item value="rouletteWheel"/>
-			<item value="population[pa"/>
-			<item value="population[parents]"/>
-			<item value="fitness"/>
-			<item value="temp = "/>
+			<item value="Main.CROSSOVER_METHOD"/>
+			<item value="Main.CROSSOVER"/>
+			<item value="NUMBER_OF_TRIANGLE_MUTATIONS ="/>
+			<item value="RUN()"/>
+			<item value="number_of_triangle_mutations"/>
+			<item value="triangle_mutations"/>
+			<item value="evolve"/>
+			<item value="int windowStartPoint"/>
 		</list>
 		<list key="replacehistory">
+			<item value="crossoverMethod"/>
 			<item value="invertedProbabilities"/>
 			<item value="invertedProbabilties"/>
 		</list>
@@ -26,7 +27,7 @@
 		<item value="290" key="DIALOG_WIDTH"/>
 		<item value="1|.SF NS Text|11.0|0|COCOA|1|.SFNSText" key="DIALOG_FONT_NAME"/>
 		<item value="409" key="DIALOG_HEIGHT"/>
-		<item value="876" key="DIALOG_X_ORIGIN"/>
-		<item value="202" key="DIALOG_Y_ORIGIN"/>
+		<item value="995" key="DIALOG_X_ORIGIN"/>
+		<item value="244" key="DIALOG_Y_ORIGIN"/>
 	</section>
 </section>
