@@ -1,4 +1,4 @@
-# GaGroup2
+# Genetic Algorithms
 
 Group Project regarding the optimisation of a genetic algorithm. The algorithm simulates the picture of Mona Lisa using 
 100 overlapping triangles.
